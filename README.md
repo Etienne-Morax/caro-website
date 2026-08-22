@@ -82,24 +82,27 @@ transition band, the argument set on warm ivory paper, and an ink close. See
 
 ## QA scripts
 
+Run these against the QA build, which uses its own `.next-qa` directory so it
+can run next to `pnpm dev` without clobbering it:
+
 ```bash
-pnpm build && pnpm start
+pnpm qa:build && pnpm qa:serve   # http://localhost:4321
 
 # Screenshots at 375 / 768 / 1440 for every section
-BASE_URL=http://localhost:3000 OUT_DIR=./screenshots node scripts/screenshots.mjs
+BASE_URL=http://localhost:4321 OUT_DIR=./screenshots node scripts/screenshots.mjs
 
 # axe-core accessibility audit, section by section + the modal
-BASE_URL=http://localhost:3000 node scripts/a11y.mjs
+BASE_URL=http://localhost:4321 node scripts/a11y.mjs
 
 # Composite colour-contrast audit (resolves oklch, blends every background layer)
-BASE_URL=http://localhost:3000 node scripts/contrast.mjs
+BASE_URL=http://localhost:4321 node scripts/contrast.mjs
 
 # Horizontal overflow at 320–1920 + modal smoke test
-BASE_URL=http://localhost:3000 OUT_DIR=./screenshots node scripts/qa.mjs
+BASE_URL=http://localhost:4321 OUT_DIR=./screenshots node scripts/qa.mjs
 ```
 
-Run these against a production build: the dev server can serve a stale
-stylesheet after config or class changes.
+> If the dev server ever renders black-on-black, it is serving a stale build
+> (usually because a production build overwrote `.next`). Run `pnpm dev:clean`.
 
 ---
 

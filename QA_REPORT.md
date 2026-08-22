@@ -1,14 +1,14 @@
 # QA Report — "Ink & Ember" redesign
 
-Run against the **production build** (`pnpm build && pnpm start`), Chrome via
-Playwright. Reproduce with the scripts in `scripts/`.
+Run against the **QA production build** (`.next-qa`, isolated from the dev
+server), Chrome via Playwright. Reproduce with the scripts in `scripts/`.
 
 ```bash
-pnpm build && pnpm start
-BASE_URL=http://localhost:3000 OUT_DIR=./screenshots node scripts/screenshots.mjs
-BASE_URL=http://localhost:3000 node scripts/a11y.mjs
-BASE_URL=http://localhost:3000 node scripts/contrast.mjs
-BASE_URL=http://localhost:3000 OUT_DIR=./screenshots node scripts/qa.mjs
+pnpm qa:build && pnpm qa:serve   # serves .next-qa on :4321
+BASE_URL=http://localhost:4321 OUT_DIR=./screenshots node scripts/screenshots.mjs
+BASE_URL=http://localhost:4321 node scripts/a11y.mjs
+BASE_URL=http://localhost:4321 node scripts/contrast.mjs
+BASE_URL=http://localhost:4321 OUT_DIR=./screenshots node scripts/qa.mjs
 ```
 
 ## Accessibility — axe-core (WCAG 2.0/2.1 A + AA)
@@ -71,9 +71,21 @@ removed (icons are now a local SVG set). Two font families, `display: swap`.
 - Lighthouse field metrics (LCP/INP/CLS) not measured here — worth running once
   the site is deployed on real hosting.
 
-## Dev-server caveat
+## Build-directory isolation
 
-The Next dev server repeatedly served a **stale Tailwind stylesheet** after
-`tailwind.config.ts` or class-name changes, which manifests as missing
-backgrounds and inherited text colours. Verify visuals against `pnpm build &&
-pnpm start`, or `rm -rf .next` before trusting a dev-server screenshot.
+A production build and a running dev server must not share `.next`: the build
+overwrites the dev server's chunks and stylesheet, which shows up in the browser
+as **black text on the dark canvas** (no Tailwind classes resolve, so colours
+fall back to the UA defaults).
+
+`next.config.ts` reads `distDir` from `NEXT_DIST_DIR`, so the QA build lives in
+`.next-qa` and can run alongside `pnpm dev`:
+
+```bash
+pnpm dev            # http://localhost:3000, .next
+pnpm qa:build       # .next-qa
+pnpm qa:serve       # http://localhost:4321, .next-qa
+```
+
+If a dev server ever renders unstyled (black on black), it is serving a stale
+build: `pnpm dev:clean` wipes `.next` and restarts it.
