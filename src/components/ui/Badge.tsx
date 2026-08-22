@@ -1,43 +1,32 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
+type BadgeTone = "paper" | "ink" | "ember" | "ember-on-ink" | "sage";
+
 interface BadgeProps {
   children: React.ReactNode;
-  variant?: "default" | "accent" | "sage" | "highlight" | "outline" | "mono";
+  tone?: BadgeTone;
   className?: string;
-  size?: "sm" | "md";
 }
 
-export const Badge: React.FC<BadgeProps> = ({
-  children,
-  variant = "default",
-  className,
-  size = "md",
-}) => {
-  const sizeStyles = {
-    sm: "px-2 py-0.5 text-xs",
-    md: "px-2.5 py-1 text-xs",
-  };
+const TONES: Record<BadgeTone, string> = {
+  paper: "border-paper-line bg-paper-card text-graphite",
+  ink: "border-paper/15 bg-paper/[0.06] text-paper/70",
+  ember: "border-ember/35 bg-ember/10 text-ember-deep",
+  "ember-on-ink": "border-ember/40 bg-ember/15 text-ember",
+  sage: "border-sage/25 bg-sage-light text-sage",
+};
 
-  const variantStyles = {
-    default: "bg-canvas-subtle text-ink-secondary border border-border",
-    accent: "bg-accent-light text-accent border border-accent-muted/60 font-medium",
-    sage: "bg-sage-light text-sage border border-sage-muted font-medium",
-    highlight: "bg-highlight text-ink font-mono border border-highlight-border text-[11px]",
-    outline: "bg-transparent text-ink-secondary border border-border hover:border-ink-muted",
-    mono: "bg-canvas-subtle text-ink-secondary border border-border font-mono text-[11px] uppercase tracking-wider",
-  };
-
+export function Badge({ children, tone = "paper", className }: BadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-md font-sans transition-colors",
-        sizeStyles[size],
-        variantStyles[variant],
-        className
+        "inline-flex items-center rounded-pill border px-3 py-1 text-xs font-medium tracking-tight",
+        TONES[tone],
+        className,
       )}
     >
       {children}
     </span>
   );
-};
+}

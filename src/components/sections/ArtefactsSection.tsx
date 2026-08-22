@@ -1,161 +1,136 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { artefactsData } from "@/data/artefacts";
 import { Artefact } from "@/types";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Reveal } from "@/components/ui/Reveal";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { ArrowUpRightIcon } from "@/components/ui/Icons";
 import { ArtefactModal } from "@/components/artefacts/ArtefactModal";
-import {
-  ArrowRight,
-  Sparkles,
-  BookOpen,
-  Calendar,
-  Layers,
-  FileSearch,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const filterCategories = [
-  { label: "All Thinking", value: "all" },
-  { label: "Case Studies", value: "case-study" },
-  { label: "UX Teardowns", value: "teardown" },
-  { label: "Product Essays", value: "essay" },
-  { label: "Frameworks", value: "discovery" },
-];
+const featured = artefactsData.find((item) => item.featured);
+const rest = artefactsData.filter((item) => !item.featured);
 
-export const ArtefactsSection: React.FC = () => {
-  const [selectedFilter, setSelectedFilter] = useState("all");
-  const [activeArtefact, setActiveArtefact] = useState<Artefact | null>(null);
+export function ArtefactsSection() {
+  const [openArtefact, setOpenArtefact] = useState<Artefact | null>(null);
 
-  const filteredArtefacts = artefactsData.filter((art) => {
-    if (selectedFilter === "all") return true;
-    return art.type === selectedFilter;
-  });
+  /** Deep link support: /#artefact-<slug> opens the reader on load. */
+  useEffect(() => {
+    const slug = window.location.hash.replace("#artefact-", "");
+    if (!slug || !window.location.hash.startsWith("#artefact-")) return;
+    const match = artefactsData.find((item) => item.slug === slug);
+    if (match) setOpenArtefact(match);
+  }, []);
 
   return (
-    <section id="artefacts" className="py-20 sm:py-28 border-b border-border bg-canvas">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="artefacts" className="section-y relative bg-paper-sunk">
+      <div className="shell">
         <SectionHeading
-          number="05"
-          category="Selected Thinking & Artefacts"
-          title="Tangible evidence of product craft"
-          subtitle="Real problem breakdowns, UX teardowns, and mental model frameworks demonstrating structured discovery, trade-off analysis, and outcome measurement."
-          annotation="Modular Product Artefacts"
+          index="05"
+          eyebrow="Selected artefacts"
+          title="Reasoning, shown in full."
+          intro="Each case study runs the same eleven steps — context, framing, evidence, options, trade-offs, metrics, learnings. No polished conclusions without the working underneath."
         />
 
-        {/* Category Filters */}
-        <div className="flex flex-wrap items-center gap-2 mb-8" role="tablist">
-          {filterCategories.map((tab) => {
-            const isSelected = selectedFilter === tab.value;
-            return (
-              <button
-                key={tab.value}
-                type="button"
-                role="tab"
-                aria-selected={isSelected}
-                onClick={() => setSelectedFilter(tab.value)}
-                className={cn(
-                  "px-3.5 py-1.5 rounded-full text-xs font-sans transition-all duration-150 border focus-visible:ring-2 focus-visible:ring-accent",
-                  isSelected
-                    ? "bg-ink text-canvas border-ink font-medium shadow-sm"
-                    : "bg-surface text-ink-secondary border-border hover:bg-canvas-subtle hover:text-ink"
-                )}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Artefacts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filteredArtefacts.map((art) => (
-            <div
-              key={art.slug}
-              onClick={() => setActiveArtefact(art)}
-              className={cn(
-                "group cursor-pointer rounded-2xl bg-surface border border-border p-6 sm:p-7 shadow-paper hover:shadow-paper-hover transition-all duration-200 flex flex-col justify-between relative overflow-hidden",
-                art.featured && "md:col-span-2 border-accent/40 bg-surface"
-              )}
+        {/* Featured */}
+        {featured ? (
+          <Reveal delay={0.08}>
+            <button
+              type="button"
+              onClick={() => setOpenArtefact(featured)}
+              className="group mt-16 grid w-full grid-cols-1 overflow-hidden rounded-card border border-ink/10 bg-ink text-left shadow-lift-lg transition-transform duration-[var(--dur-base)] ease-editorial hover:-translate-y-1 lg:grid-cols-12"
             >
-              {art.featured && (
-                <div className="absolute top-0 left-0 right-0 h-1 bg-accent" />
-              )}
-
-              <div>
-                {/* Meta Bar */}
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-border-subtle">
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={art.featured ? "accent" : art.isPlaceholder ? "highlight" : "default"}
-                      size="sm"
-                    >
-                      {art.typeLabel}
-                    </Badge>
-                    <span className="font-mono text-xs text-ink-muted">
-                      {art.readingTime}
+              <div className="relative grain flex flex-col justify-between gap-10 p-8 sm:p-12 lg:col-span-7">
+                <div className="aurora opacity-70" aria-hidden="true" />
+                <div className="relative">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Badge tone="ember-on-ink">{featured.typeLabel}</Badge>
+                    <span className="text-xs text-paper/60">
+                      {featured.publishedAt} · {featured.readingTime}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1 text-[11px] font-mono text-ink-muted">
-                    <Calendar className="w-3 h-3 text-ink-faint" />
-                    <span>{art.publishedAt}</span>
-                  </div>
-                </div>
-
-                {/* Title and Problem Statement */}
-                <div className="mt-4 space-y-2.5">
-                  <h3
-                    className={cn(
-                      "font-serif font-normal text-ink group-hover:text-accent transition-colors",
-                      art.featured ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl"
-                    )}
-                  >
-                    {art.title}
+                  <h3 className="type-title mt-7 max-w-2xl text-balance text-paper">
+                    {featured.title}
                   </h3>
 
-                  <p className="text-xs sm:text-sm font-sans text-ink-secondary leading-relaxed">
-                    {art.summary}
+                  <p className="mt-6 max-w-xl text-[0.9375rem] leading-relaxed text-paper/55">
+                    {featured.summary}
                   </p>
-
-                  <div className="p-3 rounded-lg bg-canvas-subtle/80 border border-border-subtle mt-3">
-                    <span className="font-mono text-[11px] uppercase tracking-wider text-accent font-semibold block mb-0.5">
-                      Core Question Addressed:
-                    </span>
-                    <p className="font-serif text-xs sm:text-sm text-ink italic">
-                      &ldquo;{art.oneLineProblem}&rdquo;
-                    </p>
-                  </div>
                 </div>
+
+                <span className="relative inline-flex items-center gap-3 text-ember">
+                  <span className="type-label">Open the full reader</span>
+                  <ArrowUpRightIcon className="h-4 w-4 transition-transform duration-[var(--dur-fast)] ease-editorial group-hover:translate-x-1 group-hover:-translate-y-1" />
+                </span>
               </div>
 
-              {/* Tags & Read Action */}
-              <div className="mt-6 pt-4 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex flex-wrap gap-1.5">
-                  {art.tags.map((tag) => (
-                    <Badge key={tag} variant="default" size="sm">
-                      {tag}
-                    </Badge>
+              <div className="relative flex flex-col justify-center gap-6 border-t border-paper/10 bg-paper/[0.03] p-8 sm:p-12 lg:col-span-5 lg:border-l lg:border-t-0">
+                <div>
+                  <p className="type-label text-paper/55">The question</p>
+                  <p className="mt-3 font-display text-xl italic leading-snug text-paper sm:text-2xl">
+                    “{featured.oneLineProblem}”
+                  </p>
+                </div>
+
+                <div className="border-t border-paper/10 pt-6">
+                  <p className="type-label text-paper/55">Method</p>
+                  <p className="mt-2 text-sm leading-relaxed text-paper/60">
+                    {featured.methodology}
+                  </p>
+                </div>
+
+                <ul className="flex flex-wrap gap-2">
+                  {featured.tags.slice(0, 4).map((tag) => (
+                    <li key={tag}>
+                      <Badge tone="ink">{tag}</Badge>
+                    </li>
                   ))}
-                </div>
-
-                <div className="flex items-center gap-1 text-xs font-mono text-accent font-semibold group-hover:translate-x-1 transition-transform">
-                  <span>{art.isPlaceholder ? "Inspect placeholder" : "Read case study"}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </div>
+                </ul>
               </div>
-            </div>
-          ))}
-        </div>
+            </button>
+          </Reveal>
+        ) : null}
 
-        {/* Live Modal */}
-        <ArtefactModal
-          artefact={activeArtefact}
-          onClose={() => setActiveArtefact(null)}
-        />
+        {/* Remaining artefacts */}
+        <ul className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {rest.map((artefact, index) => (
+            <Reveal key={artefact.slug} as="li" delay={index * 0.06}>
+              <button
+                type="button"
+                onClick={() => setOpenArtefact(artefact)}
+                className={cn(
+                  "group flex h-full w-full flex-col rounded-card border border-paper-line bg-paper-card p-7 text-left",
+                  "transition-[transform,box-shadow,border-color] duration-[var(--dur-base)] ease-editorial",
+                  "hover:-translate-y-1 hover:border-ember/40 hover:shadow-lift",
+                  artefact.isPlaceholder && "border-dashed",
+                )}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <Badge tone={artefact.isPlaceholder ? "sage" : "ember"}>
+                    {artefact.typeLabel}
+                  </Badge>
+                  <ArrowUpRightIcon className="h-4 w-4 text-graphite-faint transition-all duration-[var(--dur-fast)] ease-editorial group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-ember" />
+                </div>
+
+                <h3 className="type-heading mt-6 text-balance text-ink">{artefact.title}</h3>
+
+                <p className="mt-4 flex-1 text-[0.9375rem] leading-relaxed text-graphite">
+                  {artefact.summary}
+                </p>
+
+                <p className="mt-6 border-t border-paper-line pt-4 text-xs text-graphite-muted">
+                  {artefact.publishedAt} · {artefact.readingTime}
+                </p>
+              </button>
+            </Reveal>
+          ))}
+        </ul>
       </div>
+
+      <ArtefactModal artefact={openArtefact} onClose={() => setOpenArtefact(null)} />
     </section>
   );
-};
+}

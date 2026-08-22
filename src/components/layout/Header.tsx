@@ -1,153 +1,209 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { siteConfig } from "@/data/site";
-import { Button } from "@/components/ui/Button";
-import { Menu, X, ArrowUpRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ArrowUpRightIcon } from "@/components/ui/Icons";
 
-export const Header: React.FC = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("overview");
+const SECTION_IDS = siteConfig.navItems.map((item) => item.href.replace("#", ""));
 
+/** Vertical point the header's tone is sampled at. */
+const HEADER_PROBE_Y = 44;
+
+export function Header() {
+  const [isOnDark, setIsOnDark] = useState(true);
+  const [activeSection, setActiveSection] = useState(SECTION_IDS[0]);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const progressRef = useRef<HTMLDivElement>(null);
+
+  /** Tone switch + reading progress, both driven by one passive scroll listener. */
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+    const darkSections = Array.from(document.querySelectorAll<HTMLElement>('[data-tone="ink"]'));
 
-      // Simple active section detection
-      const sections = siteConfig.navItems.map((item) => item.href.substring(1));
-      const scrollPosition = window.scrollY + 120;
+    const onScroll = () => {
+      setIsOnDark(
+        darkSections.some((section) => {
+          const rect = section.getBoundingClientRect();
+          return rect.top <= HEADER_PROBE_Y && rect.bottom >= HEADER_PROBE_Y;
+        }),
+      );
 
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const sectionId = sections[i];
-        const element = document.getElementById(sectionId);
-        if (element && element.offsetTop <= scrollPosition) {
-          setActiveSection(sectionId);
-          break;
-        }
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const ratio = scrollable > 0 ? Math.min(window.scrollY / scrollable, 1) : 0;
+      if (progressRef.current) {
+        progressRef.current.style.transform = `scaleX(${ratio})`;
       }
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
 
-  return (
-    <header
-      className={cn(
-        "fixed top-0 left-0 right-0 z-40 transition-all duration-200",
-        isScrolled
-          ? "bg-canvas/90 backdrop-blur-md border-b border-border/80 shadow-sm py-3"
-          : "bg-transparent py-5"
-      )}
-    >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        {/* Brand identity */}
-        <a
-          href="#overview"
-          className="group flex items-baseline gap-2 text-ink hover:text-accent transition-colors"
-        >
-          <span className="font-serif text-xl sm:text-2xl font-normal tracking-tight">
-            {siteConfig.name}
-          </span>
-          <span className="hidden sm:inline-block font-mono text-[11px] text-ink-muted group-hover:text-accent/80 transition-colors uppercase tracking-wider">
-            / Product Thinking
-          </span>
-        </a>
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActiveSection(visible.target.id);
+      },
+      { rootMargin: "-45% 0px -45% 0px", threshold: [0, 0.25, 0.5, 1] },
+    );
 
-        {/* Desktop navigation */}
-        <nav
-          className="hidden md:flex items-center gap-1 lg:gap-2 bg-surface/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border/80 shadow-paper"
-          aria-label="Main Navigation"
-        >
-          {siteConfig.navItems.map((item) => {
-            const isActive = activeSection === item.href.substring(1);
-            return (
-              <a
-                key={item.href}
-                href={item.href}
+    SECTION_IDS.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) observer.observe(element);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = isMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMenuOpen]);
+
+  return (
+    <>
+      <div
+        ref={progressRef}
+        aria-hidden="true"
+        className="fixed inset-x-0 top-0 z-[60] h-[2px] origin-left scale-x-0 bg-ember"
+      />
+
+      <header className="fixed inset-x-0 top-0 z-50 pt-4 md:pt-6">
+        <div className="shell flex items-center justify-between gap-4">
+          {/* Wordmark */}
+          <a
+            href="#overview"
+            className={cn(
+              "group flex items-center gap-3 rounded-pill px-1 py-1 transition-colors duration-[var(--dur-base)]",
+              isOnDark ? "text-paper" : "text-ink",
+            )}
+          >
+            <span className="relative flex h-9 w-9 items-center justify-center">
+              <span className="absolute inset-0 rounded-full bg-ember opacity-90 transition-transform duration-[var(--dur-base)] ease-editorial group-hover:scale-110" />
+              <span className="relative font-display text-lg leading-none text-ink">C</span>
+            </span>
+            <span className="hidden text-sm font-semibold tracking-tight sm:block">
+              {siteConfig.name}
+              <span
                 className={cn(
-                  "px-3 py-1 rounded-full text-xs font-sans transition-all duration-150 relative",
-                  isActive
-                    ? "text-ink font-medium bg-canvas-subtle"
-                    : "text-ink-secondary hover:text-ink hover:bg-canvas-subtle/50"
+                  "ml-2 font-normal",
+                  isOnDark ? "text-paper/50" : "text-graphite-muted",
                 )}
               >
-                <span className="font-mono text-[10px] text-ink-muted mr-1 opacity-70">
-                  {item.numberPrefix}
-                </span>
-                {item.label}
-              </a>
-            );
-          })}
-        </nav>
+                / Product
+              </span>
+            </span>
+          </a>
 
-        {/* Header Right / Status & CTA */}
-        <div className="hidden sm:flex items-center gap-3">
-          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sage-light text-sage border border-sage-muted text-[11px] font-mono">
-            <span className="w-1.5 h-1.5 rounded-full bg-sage animate-pulse" />
-            <span>London · Product Pivot</span>
-          </div>
-
-          <Button
-            href="#contact"
-            variant="primary"
-            size="sm"
-            icon={<ArrowUpRight className="w-3.5 h-3.5" />}
+          {/* Desktop nav */}
+          <nav
+            aria-label="Section navigation"
+            className={cn(
+              "hidden items-center gap-1 rounded-pill border p-1.5 transition-colors duration-[var(--dur-base)] lg:flex",
+              isOnDark ? "glass-ink border-paper/15" : "glass-paper border-paper-line",
+            )}
           >
-            Let&apos;s talk
-          </Button>
-        </div>
-
-        {/* Mobile menu button */}
-        <div className="flex sm:hidden items-center gap-2">
-          <Button
-            href="#contact"
-            variant="primary"
-            size="sm"
-            className="text-xs px-2.5 py-1"
-          >
-            Contact
-          </Button>
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-lg text-ink-secondary hover:text-ink hover:bg-canvas-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            aria-expanded={mobileMenuOpen}
-            aria-label="Toggle navigation menu"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="sm:hidden fixed inset-x-0 top-[57px] bg-canvas border-b border-border shadow-paper-lg p-6 space-y-4 animate-in fade-in slide-in-from-top-4 duration-200">
-          <div className="flex items-center gap-2 p-2.5 rounded-lg bg-sage-light text-sage border border-sage-muted text-xs font-mono">
-            <Sparkles className="w-4 h-4 shrink-0" />
-            <span>London · Open to Product Opportunities</span>
-          </div>
-
-          <nav className="flex flex-col space-y-2 pt-2" aria-label="Mobile Navigation">
-            {siteConfig.navItems.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between p-2.5 rounded-lg text-sm text-ink-secondary hover:text-ink hover:bg-surface font-sans border border-transparent hover:border-border"
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="font-mono text-xs text-accent">{item.numberPrefix}</span>
-                  <span className="font-medium text-ink">{item.label}</span>
-                </div>
-                <ArrowUpRight className="w-4 h-4 text-ink-muted" />
-              </a>
-            ))}
+            {siteConfig.navItems.map((item) => {
+              const id = item.href.replace("#", "");
+              const isActive = activeSection === id;
+              return (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  aria-current={isActive ? "true" : undefined}
+                  className={cn(
+                    "rounded-pill px-3.5 py-1.5 text-[0.8125rem] font-medium tracking-tight transition-colors duration-[var(--dur-fast)]",
+                    isActive
+                      ? "bg-ember text-ink"
+                      : isOnDark
+                        ? "text-paper/60 hover:text-paper"
+                        : "text-graphite-muted hover:text-ink",
+                  )}
+                >
+                  {item.label}
+                </a>
+              );
+            })}
           </nav>
+
+          <div className="flex items-center gap-2">
+            <a
+              href="#contact"
+              className={cn(
+                "group hidden items-center gap-2 rounded-pill border px-4 py-2 text-[0.8125rem] font-semibold tracking-tight transition-colors duration-[var(--dur-fast)] sm:inline-flex",
+                isOnDark
+                  ? "border-paper/25 text-paper hover:border-ember hover:text-ember"
+                  : "border-ink/20 text-ink hover:border-ink/60",
+              )}
+            >
+              Get in touch
+              <ArrowUpRightIcon className="h-3.5 w-3.5 transition-transform duration-[var(--dur-fast)] ease-editorial group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            </a>
+
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen((open) => !open)}
+              aria-expanded={isMenuOpen}
+              aria-controls="mobile-menu"
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-pill border transition-colors duration-[var(--dur-fast)] lg:hidden",
+                isMenuOpen || isOnDark
+                  ? "border-paper/20 text-paper"
+                  : "border-ink/15 text-ink",
+              )}
+            >
+              <span className="sr-only">{isMenuOpen ? "Close menu" : "Open menu"}</span>
+              <span className="flex w-4 flex-col gap-[5px]">
+                <span
+                  className={cn(
+                    "h-px w-full bg-current transition-transform duration-[var(--dur-fast)] ease-editorial",
+                    isMenuOpen && "translate-y-[3px] rotate-45",
+                  )}
+                />
+                <span
+                  className={cn(
+                    "h-px w-full bg-current transition-transform duration-[var(--dur-fast)] ease-editorial",
+                    isMenuOpen && "-translate-y-[3px] -rotate-45",
+                  )}
+                />
+              </span>
+            </button>
+          </div>
         </div>
-      )}
-    </header>
+      </header>
+
+      {/* Mobile overlay */}
+      <div id="mobile-menu" hidden={!isMenuOpen} className="fixed inset-0 z-40 bg-ink lg:hidden">
+        <div className="grain aurora absolute inset-0" aria-hidden="true" />
+        <nav
+          aria-label="Section navigation"
+          className="shell relative flex h-full flex-col justify-center gap-2"
+        >
+          {siteConfig.navItems.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              onClick={() => setIsMenuOpen(false)}
+              className="group flex items-baseline gap-5 border-b border-paper/10 py-4 text-paper"
+            >
+              <span className="type-label text-ember">{item.numberPrefix}</span>
+              <span className="type-heading transition-transform duration-[var(--dur-fast)] ease-editorial group-hover:translate-x-2">
+                {item.label}
+              </span>
+            </a>
+          ))}
+        </nav>
+      </div>
+    </>
   );
-};
+}

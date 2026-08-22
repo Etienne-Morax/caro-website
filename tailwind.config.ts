@@ -1,5 +1,11 @@
 import type { Config } from "tailwindcss";
 
+/**
+ * Design system — "Ink & Ember"
+ * Editorial noir hero → warm ivory body → noir close.
+ * Colour is authored in oklch so the ember accent stays perceptually
+ * consistent against both the ink and the paper canvases.
+ */
 const config: Config = {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,63 +15,56 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        canvas: {
-          DEFAULT: "#FAF8F5",
-          subtle: "#F4EFE9",
-          muted: "#ECE5DB",
-          dark: "#14171A",
-        },
-        surface: {
-          DEFAULT: "#FFFFFF",
-          elevated: "#FFFFFF",
-          card: "#FFFFFF",
-          subtle: "#F9F7F4",
-          dark: "#1E2227",
-        },
         ink: {
-          DEFAULT: "#15181C",
-          secondary: "#474F5A",
-          muted: "#768190",
-          faint: "#A5B0BF",
-          inverse: "#FAF8F5",
+          DEFAULT: "oklch(0.152 0.011 264 / <alpha-value>)",
+          soft: "oklch(0.205 0.013 264 / <alpha-value>)",
+          raised: "oklch(0.252 0.013 264 / <alpha-value>)",
+          line: "oklch(0.318 0.013 264 / <alpha-value>)",
         },
-        border: {
-          DEFAULT: "#E7E1D7",
-          subtle: "#F0EBE2",
-          strong: "#D0C6B7",
-          dark: "#2C323B",
+        paper: {
+          DEFAULT: "oklch(0.972 0.010 88 / <alpha-value>)",
+          sunk: "oklch(0.945 0.014 84 / <alpha-value>)",
+          card: "oklch(0.995 0.004 88 / <alpha-value>)",
+          line: "oklch(0.885 0.016 82 / <alpha-value>)",
         },
-        accent: {
-          DEFAULT: "#C85A32",
-          hover: "#B24E27",
-          light: "#FCF3EF",
-          muted: "#EEDAD1",
-          dark: "#E06B43",
+        graphite: {
+          DEFAULT: "oklch(0.34 0.012 264 / <alpha-value>)",
+          muted: "oklch(0.455 0.012 264 / <alpha-value>)",
+          faint: "oklch(0.66 0.011 264 / <alpha-value>)",
+        },
+        ember: {
+          DEFAULT: "oklch(0.685 0.175 45 / <alpha-value>)",
+          deep: "oklch(0.505 0.152 40 / <alpha-value>)",
+          glow: "oklch(0.78 0.145 58 / <alpha-value>)",
+          wash: "oklch(0.955 0.030 60 / <alpha-value>)",
         },
         sage: {
-          DEFAULT: "#2F6B52",
-          light: "#EDF6F1",
-          muted: "#D2E7DC",
-        },
-        highlight: {
-          DEFAULT: "#FFF7D6",
-          strong: "#FFEAA3",
-          border: "#E9D278",
+          DEFAULT: "oklch(0.485 0.068 165 / <alpha-value>)",
+          light: "oklch(0.955 0.020 165 / <alpha-value>)",
         },
       },
       fontFamily: {
-        serif: ["var(--font-serif)", "Newsreader", "Georgia", "serif"],
-        sans: ["var(--font-sans)", "Plus Jakarta Sans", "Inter", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", "JetBrains Mono", "SFMono-Regular", "Menlo", "monospace"],
+        display: ["var(--font-display)", "Instrument Serif", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "Inter Tight", "system-ui", "sans-serif"],
       },
-      boxShadow: {
-        paper: "0 1px 3px rgba(22, 25, 28, 0.04), 0 4px 12px rgba(22, 25, 28, 0.03)",
-        "paper-hover": "0 2px 6px rgba(22, 25, 28, 0.06), 0 12px 28px rgba(22, 25, 28, 0.07)",
-        "paper-lg": "0 8px 30px rgba(22, 25, 28, 0.08), 0 20px 50px rgba(22, 25, 28, 0.06)",
-        "notebook-tab": "0 2px 8px rgba(200, 90, 50, 0.15)",
+      letterSpacing: {
+        label: "0.18em",
       },
       borderRadius: {
-        notebook: "10px",
+        card: "14px",
+        pill: "999px",
+      },
+      boxShadow: {
+        lift: "0 1px 2px oklch(0.15 0.01 264 / 0.05), 0 12px 32px -12px oklch(0.15 0.01 264 / 0.16)",
+        "lift-lg": "0 2px 4px oklch(0.15 0.01 264 / 0.05), 0 32px 64px -24px oklch(0.15 0.01 264 / 0.28)",
+        ember: "0 12px 40px -16px oklch(0.685 0.175 45 / 0.55)",
+      },
+      transitionTimingFunction: {
+        editorial: "cubic-bezier(0.22, 1, 0.36, 1)",
+      },
+      maxWidth: {
+        shell: "84rem",
+        prose: "38rem",
       },
     },
   },

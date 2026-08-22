@@ -1,48 +1,44 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Artefact } from "@/types";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import {
-  X,
-  Clock,
-  Calendar,
-  Layers,
-  CheckCircle2,
-  AlertTriangle,
-  Lightbulb,
-  ArrowRight,
-  TrendingUp,
-  Share2,
-} from "lucide-react";
+import { CloseIcon } from "@/components/ui/Icons";
+import { cn } from "@/lib/utils";
 
 interface ArtefactModalProps {
   artefact: Artefact | null;
   onClose: () => void;
 }
 
-export const ArtefactModal: React.FC<ArtefactModalProps> = ({ artefact, onClose }) => {
-  // Lock body scroll and listen for ESC key
+/** Numbered step header used throughout the 11-step reader. */
+function StepLabel({ children }: { children: React.ReactNode }) {
+  return <p className="type-label text-ember-deep">{children}</p>;
+}
+
+export function ArtefactModal({ artefact, onClose }: ArtefactModalProps) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previouslyFocused = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
     if (!artefact) return;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
+    previouslyFocused.current = document.activeElement as HTMLElement | null;
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
     };
 
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handleKeyDown);
-
-    // Update URL hash without scroll jumping
     window.history.replaceState(null, "", `#artefact-${artefact.slug}`);
 
     return () => {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", handleKeyDown);
       window.history.replaceState(null, "", "#artefacts");
+      previouslyFocused.current?.focus();
     };
   }, [artefact, onClose]);
 
@@ -50,322 +46,269 @@ export const ArtefactModal: React.FC<ArtefactModalProps> = ({ artefact, onClose 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 md:p-10 bg-ink/60 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-[70] flex items-end justify-center bg-ink/70 backdrop-blur-md sm:items-center sm:p-6 md:p-10"
       role="dialog"
       aria-modal="true"
       aria-labelledby="artefact-modal-title"
       onClick={onClose}
     >
-      <div
-        className="relative w-full max-w-4xl max-h-[90vh] bg-canvas rounded-2xl border border-border shadow-paper-lg flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Modal Top Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-surface shrink-0">
-          <div className="flex items-center gap-2">
-            <Badge variant="accent" size="sm">
-              {artefact.typeLabel}
-            </Badge>
-            <span className="font-mono text-xs text-ink-muted">
-              {artefact.readingTime}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-1.5 rounded-lg text-ink-secondary hover:text-ink hover:bg-canvas-subtle transition-colors focus-visible:ring-2 focus-visible:ring-accent"
-              aria-label="Close modal"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Modal Scrollable Content */}
-        <div className="overflow-y-auto p-6 sm:p-8 md:p-10 space-y-8 divide-y divide-border">
-          {/* Article Header */}
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-3 font-mono text-xs text-ink-muted">
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" />
-                {artefact.publishedAt}
-              </span>
-              <span>·</span>
-              <span className="flex items-center gap-1">
-                <Layers className="w-3.5 h-3.5" />
-                {artefact.methodology}
-              </span>
-            </div>
-
-            <h1
-              id="artefact-modal-title"
-              className="font-serif text-2xl sm:text-3xl md:text-4xl text-ink font-normal leading-tight"
-            >
-              {artefact.title}
-            </h1>
-
-            <div className="p-4 rounded-xl bg-canvas-subtle border-l-4 border-accent space-y-1">
-              <div className="font-mono text-[11px] uppercase tracking-wider text-accent font-semibold">
-                Central Problem Statement
+          <div
+            className="relative flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-t-card border border-paper-line bg-paper shadow-lift-lg sm:rounded-card"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {/* Sticky bar */}
+            <div className="flex shrink-0 items-center justify-between gap-4 border-b border-paper-line bg-paper-card px-5 py-4 sm:px-8">
+              <div className="flex items-center gap-3">
+                <Badge tone="ember">{artefact.typeLabel}</Badge>
+                <span className="text-xs text-graphite-muted">{artefact.readingTime}</span>
               </div>
-              <p className="font-serif text-base sm:text-lg text-ink italic leading-snug">
-                &ldquo;{artefact.oneLineProblem}&rdquo;
-              </p>
-            </div>
-          </div>
 
-          {/* Placeholder Content Warning */}
-          {artefact.isPlaceholder && (
-            <div className="pt-8">
-              <div className="p-6 rounded-xl bg-highlight/80 border border-highlight-border space-y-3">
-                <div className="flex items-center gap-2 text-sm font-mono text-ink font-bold">
-                  <AlertTriangle className="w-4 h-4 text-accent" />
-                  <span>[CONTENT PLACEHOLDER: CAROLINE ACTION REQUIRED]</span>
-                </div>
-                <p className="text-sm font-sans text-ink leading-relaxed">
-                  {artefact.placeholderMessage}
+              <button
+                ref={closeButtonRef}
+                type="button"
+                onClick={onClose}
+                className="flex h-9 w-9 items-center justify-center rounded-pill border border-paper-line text-graphite transition-colors duration-[var(--dur-fast)] hover:border-ink/40 hover:text-ink"
+              >
+                <span className="sr-only">Close case study</span>
+                <CloseIcon className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="overflow-y-auto px-5 py-8 sm:px-8 md:px-12">
+              <header className="max-w-3xl">
+                <p className="text-xs text-graphite-muted">
+                  {artefact.publishedAt} · {artefact.methodology}
                 </p>
-                <div className="text-xs font-mono text-ink-secondary bg-surface/80 p-3 rounded-lg border border-border">
-                  💡 <strong>How to publish this artefact:</strong> Edit the corresponding entry in{" "}
-                  <code>src/data/artefacts.ts</code> and populate the 11-step case study structure.
-                </div>
-              </div>
-            </div>
-          )}
 
-          {/* Complete 11-Step Case Study Layout */}
-          {artefact.caseStudy && (
-            <div className="pt-8 space-y-8 font-sans">
-              {/* 1. Context & 2. Problem */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <span className="font-mono text-xs text-accent font-bold">
-                    01 / CONTEXT
-                  </span>
-                  <h3 className="font-serif text-lg font-medium text-ink">
-                    Operating Environment
-                  </h3>
-                  <p className="text-sm text-ink-secondary leading-relaxed">
-                    {artefact.caseStudy.context}
+                <h2
+                  id="artefact-modal-title"
+                  className="type-title mt-4 text-balance text-ink"
+                  style={{ fontSize: "clamp(1.75rem, 3.4vw, 2.75rem)" }}
+                >
+                  {artefact.title}
+                </h2>
+
+                <div className="mt-7 border-l-2 border-ember bg-ember-wash py-4 pl-5 pr-4">
+                  <StepLabel>Central problem statement</StepLabel>
+                  <p className="mt-2 font-display text-lg italic leading-snug text-ink sm:text-xl">
+                    “{artefact.oneLineProblem}”
                   </p>
                 </div>
+              </header>
 
-                <div className="space-y-2">
-                  <span className="font-mono text-xs text-accent font-bold">
-                    02 / PROBLEM FRAMING
-                  </span>
-                  <h3 className="font-serif text-lg font-medium text-ink">
-                    The Underlying Friction
-                  </h3>
-                  <p className="text-sm text-ink-secondary leading-relaxed">
-                    {artefact.caseStudy.problem}
+              {artefact.isPlaceholder ? (
+                <div className="mt-8 rounded-card border border-sage/30 bg-sage-light p-6">
+                  <p className="type-label text-sage">Draft in progress</p>
+                  <p className="mt-3 text-sm leading-relaxed text-ink">
+                    {artefact.placeholderMessage}
+                  </p>
+                  <p className="mt-4 rounded-lg border border-sage/20 bg-paper-card p-3 text-xs leading-relaxed text-graphite">
+                    To publish: populate the 11-step structure for this entry in{" "}
+                    <code className="text-ink">src/data/artefacts.ts</code>.
                   </p>
                 </div>
-              </div>
+              ) : null}
 
-              {/* 3. Observations & 4. Assumptions */}
-              <div className="space-y-4">
-                <span className="font-mono text-xs text-accent font-bold">
-                  03 / OBSERVATIONS & 04 / ASSUMPTIONS TESTED
-                </span>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl bg-surface border border-border space-y-2">
-                    <div className="font-medium text-xs font-mono text-ink uppercase">
-                      Direct Observations
+              {artefact.caseStudy ? (
+                <div className="mt-12 space-y-12">
+                  {/* 01 / 02 */}
+                  <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                    <section>
+                      <StepLabel>01 — Context</StepLabel>
+                      <h3 className="type-heading mt-3 text-ink">Operating environment</h3>
+                      <p className="mt-3 text-[0.9375rem] leading-relaxed text-graphite">
+                        {artefact.caseStudy.context}
+                      </p>
+                    </section>
+                    <section>
+                      <StepLabel>02 — Problem framing</StepLabel>
+                      <h3 className="type-heading mt-3 text-ink">The underlying friction</h3>
+                      <p className="mt-3 text-[0.9375rem] leading-relaxed text-graphite">
+                        {artefact.caseStudy.problem}
+                      </p>
+                    </section>
+                  </div>
+
+                  {/* 03 / 04 */}
+                  <section>
+                    <StepLabel>03 — Observations · 04 — Assumptions tested</StepLabel>
+                    <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                      {[
+                        {
+                          title: "Direct observations",
+                          items: artefact.caseStudy.observations,
+                          dot: "bg-ember",
+                        },
+                        {
+                          title: "Assumption vs reality",
+                          items: artefact.caseStudy.assumptions,
+                          dot: "bg-sage",
+                        },
+                      ].map((block) => (
+                        <div
+                          key={block.title}
+                          className="rounded-card border border-paper-line bg-paper-card p-5"
+                        >
+                          <p className="type-label text-graphite-muted">{block.title}</p>
+                          <ul className="mt-3 space-y-2.5">
+                            {block.items.map((item) => (
+                              <li key={item} className="flex gap-3">
+                                <span
+                                  aria-hidden="true"
+                                  className={cn("mt-2 h-1.5 w-1.5 shrink-0 rounded-full", block.dot)}
+                                />
+                                <span className="text-sm leading-relaxed text-graphite">{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
                     </div>
-                    <ul className="space-y-2 text-xs sm:text-sm text-ink-secondary">
-                      {artefact.caseStudy.observations.map((obs, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-accent mt-1.5 shrink-0" />
-                          <span>{obs}</span>
+                  </section>
+
+                  {/* 05 */}
+                  <section>
+                    <StepLabel>05 — Evidence &amp; research</StepLabel>
+                    <ul className="mt-4 divide-y divide-paper-line rounded-card border border-paper-line bg-paper-card">
+                      {artefact.caseStudy.evidenceResearch.map((item) => (
+                        <li key={item} className="flex gap-3 p-5">
+                          <span className="mt-1.5 h-px w-5 shrink-0 bg-sage" aria-hidden="true" />
+                          <span className="text-sm leading-relaxed text-graphite">{item}</span>
                         </li>
                       ))}
                     </ul>
-                  </div>
+                  </section>
 
-                  <div className="p-4 rounded-xl bg-surface border border-border space-y-2">
-                    <div className="font-medium text-xs font-mono text-ink uppercase">
-                      Assumption vs Reality
+                  {/* 06 */}
+                  <section>
+                    <StepLabel>06 — Stakeholder matrix &amp; constraints</StepLabel>
+                    <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      {artefact.caseStudy.stakeholderNeeds.map((need) => (
+                        <div
+                          key={need.stakeholder}
+                          className="rounded-card border border-paper-line bg-paper-sunk p-5"
+                        >
+                          <p className="font-display text-lg text-ink">{need.stakeholder}</p>
+                          <p className="mt-3 text-sm leading-relaxed text-graphite">{need.need}</p>
+                          <p className="mt-3 border-t border-paper-line pt-3 text-xs leading-relaxed text-graphite-muted">
+                            Constraint — {need.constraint}
+                          </p>
+                        </div>
+                      ))}
                     </div>
-                    <ul className="space-y-2 text-xs sm:text-sm text-ink-secondary">
-                      {artefact.caseStudy.assumptions.map((ass, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-sage mt-1.5 shrink-0" />
-                          <span>{ass}</span>
+                  </section>
+
+                  {/* 07 / 08 */}
+                  <section>
+                    <StepLabel>07 — Options considered · 08 — Trade-offs</StepLabel>
+                    <ul className="mt-4 space-y-3">
+                      {artefact.caseStudy.optionsConsidered.map((option) => (
+                        <li
+                          key={option.option}
+                          className={cn(
+                            "rounded-card border p-5",
+                            option.selected
+                              ? "border-sage/40 bg-sage-light"
+                              : "border-paper-line bg-paper-card",
+                          )}
+                        >
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <p className="text-[0.9375rem] font-medium text-ink">{option.option}</p>
+                            {option.selected ? <Badge tone="sage">Selected path</Badge> : null}
+                          </div>
+                          <p className="mt-2 text-sm leading-relaxed text-graphite">
+                            {option.evaluation}
+                          </p>
                         </li>
                       ))}
                     </ul>
-                  </div>
-                </div>
-              </div>
 
-              {/* 5. Evidence & Research */}
-              <div className="space-y-3">
-                <span className="font-mono text-xs text-accent font-bold">
-                  05 / EVIDENCE & RESEARCH
-                </span>
-                <div className="p-4 rounded-xl bg-surface border border-border space-y-2">
-                  <ul className="space-y-2 text-xs sm:text-sm text-ink-secondary">
-                    {artefact.caseStudy.evidenceResearch.map((ev, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-sage shrink-0 mt-0.5" />
-                        <span>{ev}</span>
-                      </li>
+                    <p className="mt-5 border-l-2 border-ink/20 pl-5 text-[0.9375rem] leading-relaxed text-graphite">
+                      <span className="font-medium text-ink">Trade-off rationale — </span>
+                      {artefact.caseStudy.prioritisationTradeoffs}
+                    </p>
+                  </section>
+
+                  {/* 09 */}
+                  <section>
+                    <StepLabel>09 — Proposed solution</StepLabel>
+                    <div className="mt-4 rounded-card border border-ink/10 bg-ink p-7">
+                      <p className="font-display text-xl text-paper sm:text-2xl">
+                        The lightweight operational solution
+                      </p>
+                      <p className="mt-4 max-w-2xl text-[0.9375rem] leading-relaxed text-paper/60">
+                        {artefact.caseStudy.proposedSolution}
+                      </p>
+                    </div>
+                  </section>
+
+                  {/* 10 */}
+                  <section>
+                    <StepLabel>10 — Measuring success</StepLabel>
+                    <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      {artefact.caseStudy.successMetrics.map((metric) => (
+                        <div
+                          key={metric.metric}
+                          className="rounded-card border border-paper-line bg-paper-card p-5"
+                        >
+                          <dt className="type-label text-ember-deep">{metric.metric}</dt>
+                          <dd className="mt-3 font-display text-lg leading-snug text-ink">
+                            {metric.targetIndicator}
+                          </dd>
+                          <dd className="mt-2 text-xs leading-relaxed text-graphite-muted">
+                            {metric.whyItMatters}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </section>
+
+                  {/* 11 */}
+                  <section>
+                    <StepLabel>11 — Learnings &amp; next tests</StepLabel>
+                    <p className="mt-4 rounded-card border border-paper-line bg-paper-sunk p-6 text-[0.9375rem] leading-relaxed text-graphite">
+                      {artefact.caseStudy.learningsAndNextTests}
+                    </p>
+                  </section>
+                </div>
+              ) : null}
+
+              {artefact.editorialTakeaways ? (
+                <section className="mt-12">
+                  <StepLabel>Product takeaways</StepLabel>
+                  <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    {artefact.editorialTakeaways.map((takeaway) => (
+                      <p
+                        key={takeaway}
+                        className="border-t-2 border-ember pt-4 font-display text-lg italic leading-snug text-ink"
+                      >
+                        “{takeaway}”
+                      </p>
                     ))}
-                  </ul>
-                </div>
-              </div>
-
-              {/* 6. Stakeholder Needs */}
-              <div className="space-y-3">
-                <span className="font-mono text-xs text-accent font-bold">
-                  06 / STAKEHOLDER MATRIX & CONSTRAINTS
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {artefact.caseStudy.stakeholderNeeds.map((sn, i) => (
-                    <div
-                      key={i}
-                      className="p-4 rounded-xl bg-canvas-subtle border border-border space-y-1.5"
-                    >
-                      <div className="font-serif text-sm font-medium text-ink">
-                        {sn.stakeholder}
-                      </div>
-                      <p className="text-xs text-ink-secondary leading-snug">
-                        <strong>Need:</strong> {sn.need}
-                      </p>
-                      <p className="text-[11px] font-mono text-ink-muted">
-                        <strong>Constraint:</strong> {sn.constraint}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* 7. Options Considered & 8. Prioritisation Trade-offs */}
-              <div className="space-y-4">
-                <span className="font-mono text-xs text-accent font-bold">
-                  07 / OPTIONS CONSIDERED & 08 / TRADE-OFFS
-                </span>
-                <div className="space-y-2.5">
-                  {artefact.caseStudy.optionsConsidered.map((opt, i) => (
-                    <div
-                      key={i}
-                      className={`p-3.5 rounded-xl border text-xs sm:text-sm ${
-                        opt.selected
-                          ? "bg-sage-light/60 border-sage text-ink"
-                          : "bg-surface border-border text-ink-secondary"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between font-medium">
-                        <span>{opt.option}</span>
-                        {opt.selected && (
-                          <Badge variant="sage" size="sm">
-                            Selected Path
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="text-xs text-ink-muted mt-1">
-                        Evaluation: {opt.evaluation}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="p-4 rounded-xl bg-surface border border-border text-xs sm:text-sm text-ink-secondary">
-                  <strong>Trade-off Rationale:</strong> {artefact.caseStudy.prioritisationTradeoffs}
-                </div>
-              </div>
-
-              {/* 9. Proposed Solution */}
-              <div className="space-y-2">
-                <span className="font-mono text-xs text-accent font-bold">
-                  09 / PROPOSED SOLUTION
-                </span>
-                <div className="p-5 rounded-xl bg-surface border border-border space-y-2">
-                  <h4 className="font-serif text-lg font-normal text-ink">
-                    The Lightweight Operational Solution
-                  </h4>
-                  <p className="text-sm text-ink-secondary leading-relaxed">
-                    {artefact.caseStudy.proposedSolution}
-                  </p>
-                </div>
-              </div>
-
-              {/* 10. Success Metrics */}
-              <div className="space-y-3">
-                <span className="font-mono text-xs text-accent font-bold">
-                  10 / MEASURING SUCCESS
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {artefact.caseStudy.successMetrics.map((sm, i) => (
-                    <div
-                      key={i}
-                      className="p-4 rounded-xl bg-surface border border-border space-y-1"
-                    >
-                      <div className="font-mono text-xs text-accent font-semibold flex items-center gap-1">
-                        <TrendingUp className="w-3 h-3" />
-                        {sm.metric}
-                      </div>
-                      <div className="font-serif text-base text-ink font-medium">
-                        {sm.targetIndicator}
-                      </div>
-                      <p className="text-[11px] text-ink-muted leading-tight">
-                        {sm.whyItMatters}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* 11. Learnings & Next Tests */}
-              <div className="space-y-2">
-                <span className="font-mono text-xs text-accent font-bold">
-                  11 / WHAT I LEARNED & WHAT TO TEST NEXT
-                </span>
-                <div className="p-4 rounded-xl bg-canvas-subtle border border-border text-sm text-ink-secondary leading-relaxed">
-                  {artefact.caseStudy.learningsAndNextTests}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Editorial Key Takeaways */}
-          {artefact.editorialTakeaways && (
-            <div className="pt-8 space-y-3">
-              <span className="font-mono text-xs text-accent font-bold uppercase">
-                Product Thinker Takeaways
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {artefact.editorialTakeaways.map((takeaway, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 rounded-xl bg-surface border border-border text-xs sm:text-sm text-ink font-serif italic"
-                  >
-                    &ldquo;{takeaway}&rdquo;
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </section>
+              ) : null}
 
-          {/* Footer Actions */}
-          <div className="pt-6 flex items-center justify-between">
-            <div className="flex flex-wrap gap-1.5">
-              {artefact.tags.map((tag) => (
-                <Badge key={tag} variant="default" size="sm">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
+              <footer className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-paper-line pt-6">
+                <ul className="flex flex-wrap gap-2">
+                  {artefact.tags.map((tag) => (
+                    <li key={tag}>
+                      <Badge>{tag}</Badge>
+                    </li>
+                  ))}
+                </ul>
 
-            <Button variant="secondary" size="sm" onClick={onClose}>
-              Close Case Study
-            </Button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="rounded-pill border border-ink/20 px-5 py-2.5 text-sm font-semibold text-ink transition-colors duration-[var(--dur-fast)] hover:border-ink/60"
+                >
+                  Close case study
+                </button>
+              </footer>
+            </div>
           </div>
-        </div>
-      </div>
     </div>
   );
-};
+}

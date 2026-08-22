@@ -1,70 +1,60 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "editorial";
-  size?: "sm" | "md" | "lg";
-  href?: string;
-  target?: string;
-  rel?: string;
+type ButtonVariant = "ember" | "outline-ink" | "outline-paper" | "ghost";
+type ButtonSize = "sm" | "md" | "lg";
+
+interface ButtonProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+  href: string;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   children: React.ReactNode;
-  icon?: React.ReactNode;
+  trailingIcon?: React.ReactNode;
 }
 
-export const Button: React.FC<ButtonProps> = ({
-  variant = "primary",
-  size = "md",
+const VARIANTS: Record<ButtonVariant, string> = {
+  ember:
+    "bg-ember text-ink shadow-ember hover:bg-ember-glow hover:-translate-y-0.5 active:translate-y-0",
+  "outline-ink":
+    "border border-ink/20 text-ink hover:border-ink/60 hover:-translate-y-0.5 active:translate-y-0",
+  "outline-paper":
+    "border border-paper/25 text-paper hover:border-ember hover:text-ember hover:-translate-y-0.5 active:translate-y-0",
+  ghost: "text-graphite-muted hover:text-ember",
+};
+
+const SIZES: Record<ButtonSize, string> = {
+  sm: "px-4 py-2 text-sm",
+  md: "px-6 py-3 text-[0.9375rem]",
+  lg: "px-8 py-4 text-base",
+};
+
+export function Button({
   href,
-  target,
-  rel,
-  children,
-  icon,
+  variant = "ember",
+  size = "md",
   className,
-  ...props
-}) => {
-  const sizeStyles = {
-    sm: "px-3 py-1.5 text-xs font-medium gap-1.5",
-    md: "px-4 py-2 text-sm font-medium gap-2",
-    lg: "px-5 py-2.5 text-base font-medium gap-2.5",
-  };
-
-  const variantStyles = {
-    primary:
-      "bg-ink text-canvas hover:bg-ink-secondary active:scale-[0.99] border border-ink shadow-sm",
-    secondary:
-      "bg-surface text-ink hover:bg-canvas-subtle active:scale-[0.99] border border-border shadow-paper hover:shadow-paper-hover",
-    editorial:
-      "bg-accent text-white hover:bg-accent-hover active:scale-[0.99] border border-accent shadow-sm",
-    outline:
-      "bg-transparent text-ink hover:bg-canvas-subtle border border-border active:scale-[0.99]",
-    ghost:
-      "bg-transparent text-ink-secondary hover:text-ink hover:bg-canvas-subtle border-transparent",
-  };
-
-  const baseStyles =
-    "inline-flex items-center justify-center rounded-lg transition-all duration-150 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none select-none cursor-pointer";
-
-  if (href) {
-    return (
-      <a
-        href={href}
-        target={target}
-        rel={rel || (target === "_blank" ? "noopener noreferrer" : undefined)}
-        className={cn(baseStyles, sizeStyles[size], variantStyles[variant], className)}
-      >
-        {children}
-        {icon && <span className="shrink-0">{icon}</span>}
-      </a>
-    );
-  }
-
+  children,
+  trailingIcon,
+  ...rest
+}: ButtonProps) {
   return (
-    <button
-      className={cn(baseStyles, sizeStyles[size], variantStyles[variant], className)}
-      {...props}
+    <a
+      href={href}
+      className={cn(
+        "group inline-flex items-center justify-center gap-2.5 rounded-pill font-semibold tracking-tight",
+        "transition-[transform,background-color,border-color,color] duration-[var(--dur-fast)] ease-editorial",
+        VARIANTS[variant],
+        SIZES[size],
+        className,
+      )}
+      {...rest}
     >
       {children}
-      {icon && <span className="shrink-0">{icon}</span>}
-    </button>
+      {trailingIcon ? (
+        <span className="transition-transform duration-[var(--dur-fast)] ease-editorial group-hover:translate-x-1">
+          {trailingIcon}
+        </span>
+      ) : null}
+    </a>
   );
-};
+}

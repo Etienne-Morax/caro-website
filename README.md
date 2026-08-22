@@ -58,11 +58,48 @@ All text, experience records, principles, and case studies are separated into st
 
 ## Key Features & Architecture
 
-- **Signature Interactive Device**: The 4-phase mental model (`01 Observe ➔ 02 Frame ➔ 03 Explore ➔ 04 Decide`) in the Hero section.
-- **Andrey Mitko-Inspired Experience Section**: Clean typography with dedicated `Product Lens` annotations for each verified employer.
-- **Experience-to-Product Bridge**: Interactive comparative table translating talent operations into product competencies.
-- **Modular 11-Step Case Study Reader**: Accessible modal with URL hash sync (`#artefact-[slug]`), ESC keyboard shortcut, and reading metrics.
-- **WCAG AA Compliance**: 14.2:1 contrast ratio, full keyboard navigation, and reduced-motion support.
+Visual direction: **"Ink & Ember"** — a near-black cinematic hero, an ember
+transition band, the argument set on warm ivory paper, and an ink close. See
+[`DESIGN_RATIONALE.md`](./DESIGN_RATIONALE.md).
+
+- **Signature interactive device**: the 4-beat reasoning loop (`01 Observe → 02 Frame → 03 Explore → 04 Decide`) in the hero, auto-advancing until the visitor takes over.
+- **Experience read through a product lens**: verbatim factual records, with the product interpretation visually separated in an ember panel.
+- **Translation matrix**: interactive mapping from each piece of prior work to the product discipline it transfers to.
+- **11-step case-study reader**: modal with focus capture/restore, `Escape` to close, and deep links (`#artefact-[slug]`).
+- **Accessibility**: 0 axe violations (WCAG 2.1 AA), full keyboard navigation, `prefers-reduced-motion` support.
+- **No animation library**: entrances are CSS transitions toggled by a class, so content is never left invisible mid-flight. 130 kB First Load JS.
+
+### Design system
+
+| Where | What |
+| :--- | :--- |
+| `src/app/globals.css` | Colour, spacing, motion tokens (`oklch`, `clamp`); type scale; atmosphere and reveal utilities |
+| `tailwind.config.ts` | The same palette exposed as Tailwind colours |
+| `src/components/ui/` | Primitives: `Button`, `Badge`, `Reveal`, `SectionHeading`, `Marquee`, `Icons` |
+| `src/components/sections/` | One file per page section |
+
+> Tailwind only emits opacity modifiers in multiples of 5 (`text-paper/55`, not `/58`).
+
+## QA scripts
+
+```bash
+pnpm build && pnpm start
+
+# Screenshots at 375 / 768 / 1440 for every section
+BASE_URL=http://localhost:3000 OUT_DIR=./screenshots node scripts/screenshots.mjs
+
+# axe-core accessibility audit, section by section + the modal
+BASE_URL=http://localhost:3000 node scripts/a11y.mjs
+
+# Composite colour-contrast audit (resolves oklch, blends every background layer)
+BASE_URL=http://localhost:3000 node scripts/contrast.mjs
+
+# Horizontal overflow at 320–1920 + modal smoke test
+BASE_URL=http://localhost:3000 OUT_DIR=./screenshots node scripts/qa.mjs
+```
+
+Run these against a production build: the dev server can serve a stale
+stylesheet after config or class changes.
 
 ---
 

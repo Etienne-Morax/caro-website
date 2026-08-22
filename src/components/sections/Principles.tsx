@@ -1,72 +1,95 @@
 import React from "react";
 import { principlesData } from "@/data/principles";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Reveal } from "@/components/ui/Reveal";
 import { Badge } from "@/components/ui/Badge";
-import { CheckCircle2, ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export const Principles: React.FC = () => {
+/** Deliberately uneven spans so the grid reads editorial, not template. */
+const SPANS = ["lg:col-span-7", "lg:col-span-5", "lg:col-span-5", "lg:col-span-7"];
+
+export function Principles() {
   return (
-    <section id="mindset" className="py-20 sm:py-28 border-b border-border bg-canvas">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="mindset" className="section-y relative overflow-hidden bg-paper">
+      <div className="absolute inset-0 hairline-grid-paper opacity-60" aria-hidden="true" />
+
+      <div className="shell relative">
         <SectionHeading
-          number="01"
-          category="Product Mindset"
-          title="How I think about problems"
-          subtitle="Four core operating principles developed across 4+ years of high-velocity discovery, stakeholder negotiation, and operational delivery."
-          annotation="Evidence-led problem solving"
+          index="01"
+          eyebrow="Operating principles"
+          title={
+            <>
+              Four rules that survived <em className="italic text-ember-deep">real</em> constraints.
+            </>
+          }
+          intro="Not borrowed frameworks. These are the habits that decided outcomes when timelines, budgets and human expectations were all pulling in different directions."
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {principlesData.map((principle) => (
-            <div
+        <ul className="mt-16 grid grid-cols-1 gap-5 lg:grid-cols-12">
+          {principlesData.map((principle, index) => (
+            <Reveal
               key={principle.id}
-              className="group rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-paper hover:shadow-paper-hover transition-all duration-200 flex flex-col justify-between"
+              as="li"
+              delay={index * 0.07}
+              className={cn("group", SPANS[index % SPANS.length])}
             >
-              <div>
-                <div className="flex items-center justify-between pb-4 border-b border-border-subtle">
-                  <span className="font-mono text-xs font-semibold text-accent tracking-wider">
-                    PRINCIPLE {principle.number}
-                  </span>
-                  <div className="flex flex-wrap gap-1">
-                    {principle.tags.map((tag) => (
-                      <Badge key={tag} variant="default" size="sm">
-                        {tag}
-                      </Badge>
-                    ))}
+              <article
+                data-index={principle.number}
+                className={cn(
+                  "relative flex h-full flex-col overflow-hidden rounded-card border border-paper-line bg-paper-card p-7 sm:p-9",
+                  "transition-[transform,box-shadow,border-color] duration-[var(--dur-base)] ease-editorial",
+                  "hover:-translate-y-1 hover:border-ember/40 hover:shadow-lift-lg",
+                  // Decorative watermark numeral — a pseudo-element so it stays
+                  // out of the accessibility tree entirely.
+                  "before:pointer-events-none before:absolute before:-right-4 before:-top-8",
+                  "before:font-display before:text-[8rem] before:leading-none before:text-ink/[0.045]",
+                  "before:transition-colors before:duration-[var(--dur-base)] before:content-[attr(data-index)]",
+                  "group-hover:before:text-ember/10",
+                )}
+              >
+                <p className="type-label text-ember-deep">{principle.subtitle}</p>
+
+                <h3 className="type-heading mt-4 max-w-md text-balance text-ink">
+                  {principle.title}
+                </h3>
+
+                <p className="mt-4 max-w-prose text-[0.9375rem] leading-relaxed text-graphite">
+                  {principle.description}
+                </p>
+
+                <div className="mt-7 space-y-4 border-t border-paper-line pt-6">
+                  <div className="flex gap-4">
+                    <span className="mt-1.5 h-px w-6 shrink-0 bg-ember" aria-hidden="true" />
+                    <div>
+                      <p className="type-label text-graphite-muted">Where it was earned</p>
+                      <p className="mt-1.5 text-sm leading-relaxed text-ink">
+                        {principle.realWorldTransfer}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <span className="mt-1.5 h-px w-6 shrink-0 bg-sage" aria-hidden="true" />
+                    <div>
+                      <p className="type-label text-graphite-muted">Artefact produced</p>
+                      <p className="mt-1.5 text-sm leading-relaxed text-ink">
+                        {principle.keyArtifact}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="mt-5">
-                  <h3 className="font-serif text-2xl font-normal text-ink group-hover:text-accent transition-colors">
-                    {principle.title}
-                  </h3>
-                  <p className="text-xs font-mono text-ink-muted uppercase tracking-wider mt-1">
-                    {principle.subtitle}
-                  </p>
-                  <p className="mt-3 text-sm sm:text-base text-ink-secondary leading-relaxed font-sans">
-                    {principle.description}
-                  </p>
-                </div>
-              </div>
-
-              {/* Real World Transfer Annotation Box */}
-              <div className="mt-6 pt-4 border-t border-border-subtle bg-canvas-subtle/60 rounded-xl p-3.5 space-y-2">
-                <div className="flex items-center gap-1.5 text-xs font-mono text-sage font-medium">
-                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                  <span>Real-World Grounding</span>
-                </div>
-                <p className="text-xs text-ink-secondary leading-normal font-sans">
-                  {principle.realWorldTransfer}
-                </p>
-                <div className="text-[11px] font-mono text-ink-faint flex items-center gap-1 pt-1 border-t border-border-subtle">
-                  <span>Supporting Artefact:</span>
-                  <span className="text-ink-muted italic">{principle.keyArtifact}</span>
-                </div>
-              </div>
-            </div>
+                <ul className="mt-6 flex flex-wrap gap-2">
+                  {principle.tags.map((tag) => (
+                    <li key={tag}>
+                      <Badge>{tag}</Badge>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            </Reveal>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
   );
-};
+}

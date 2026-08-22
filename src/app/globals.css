@@ -4,64 +4,272 @@
 
 @layer base {
   :root {
-    --canvas: #FAF8F5;
-    --canvas-subtle: #F4EFE9;
-    --surface: #FFFFFF;
-    --ink: #15181C;
-    --ink-secondary: #474F5A;
-    --ink-muted: #768190;
-    --border: #E7E1D7;
-    --border-subtle: #F0EBE2;
-    --accent: #C85A32;
-    --accent-hover: #B24E27;
-    --accent-light: #FCF3EF;
-    --sage: #2F6B52;
-    --sage-light: #EDF6F1;
+    /* Canvas */
+    --ink: oklch(0.152 0.011 264);
+    --ink-soft: oklch(0.205 0.013 264);
+    --ink-line: oklch(0.318 0.013 264);
+    --paper: oklch(0.972 0.010 88);
+    --paper-sunk: oklch(0.945 0.014 84);
+    --paper-line: oklch(0.885 0.016 82);
+
+    /* Type */
+    --graphite: oklch(0.34 0.012 264);
+    --graphite-muted: oklch(0.455 0.012 264);
+
+    /* Signal */
+    --ember: oklch(0.685 0.175 45);
+    --ember-deep: oklch(0.505 0.152 40);
+    --sage: oklch(0.485 0.068 165);
+
+    /* Rhythm — fluid spacing scale */
+    --gutter: clamp(1.25rem, 4vw, 4rem);
+    --section-y: clamp(5rem, 12vh, 9.5rem);
+
+    /* Motion */
+    --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+    --dur-fast: 220ms;
+    --dur-base: 420ms;
+    --dur-slow: 900ms;
   }
 
   html {
     scroll-behavior: smooth;
-    color: var(--ink);
-    background-color: var(--canvas);
-    font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+    background-color: var(--ink);
+    color: var(--graphite);
+    font-family: var(--font-sans, system-ui, sans-serif);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  ::selection {
-    background-color: #F8DFC8;
-    color: #15181C;
+  /* `clip` rather than `hidden`: keeps position: sticky working. */
+  html,
+  body {
+    overflow-x: clip;
   }
 
-  /* Accessible focus indicators */
+  ::selection {
+    background-color: var(--ember);
+    color: var(--paper);
+  }
+
   :focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--ember);
     outline-offset: 3px;
     border-radius: 4px;
   }
+
+  /* Headings default to the editorial display face */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display, Georgia, serif);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+  }
 }
 
-/* Custom editorial paper scrollbar */
+@layer components {
+  /* ---- Typographic scale ------------------------------------------- */
+  .type-display {
+    font-family: var(--font-display, Georgia, serif);
+    font-size: clamp(2.5rem, 5.4vw, 4.75rem);
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+  }
+
+  .type-title {
+    font-family: var(--font-display, Georgia, serif);
+    font-size: clamp(2rem, 4.6vw, 3.9rem);
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+  }
+
+  .type-heading {
+    font-family: var(--font-display, Georgia, serif);
+    font-size: clamp(1.35rem, 2.1vw, 1.9rem);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+  }
+
+  .type-lead {
+    font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+    line-height: 1.62;
+    letter-spacing: -0.006em;
+  }
+
+  .type-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  /* ---- Shell ------------------------------------------------------- */
+  .shell {
+    width: 100%;
+    max-width: 84rem;
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  .section-y {
+    padding-block: var(--section-y);
+  }
+
+  /* ---- Surfaces ----------------------------------------------------- */
+  .rule-ink {
+    border-color: color-mix(in oklab, var(--ink-line) 60%, transparent);
+  }
+
+  .glass-ink {
+    background: color-mix(in oklab, var(--ink) 72%, transparent);
+    backdrop-filter: blur(14px) saturate(140%);
+  }
+
+  .glass-paper {
+    background: color-mix(in oklab, var(--paper) 78%, transparent);
+    backdrop-filter: blur(14px) saturate(140%);
+  }
+
+  /* ---- Atmosphere ---------------------------------------------------- */
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.16;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+
+  .aurora {
+    position: absolute;
+    inset: -25%;
+    pointer-events: none;
+    background:
+      radial-gradient(38rem 30rem at 18% 22%, oklch(0.685 0.175 45 / 0.22), transparent 65%),
+      radial-gradient(34rem 26rem at 82% 12%, oklch(0.485 0.068 165 / 0.20), transparent 62%),
+      radial-gradient(46rem 34rem at 62% 88%, oklch(0.575 0.158 42 / 0.16), transparent 68%);
+    filter: blur(8px);
+    animation: auroraDrift 26s var(--ease-editorial) infinite alternate;
+  }
+
+  .hairline-grid {
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, var(--ink-line) 34%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--ink-line) 34%, transparent) 1px, transparent 1px);
+    background-size: clamp(3rem, 7vw, 6rem) clamp(3rem, 7vw, 6rem);
+    mask-image: radial-gradient(70% 60% at 50% 40%, black, transparent 92%);
+  }
+
+  .hairline-grid-paper {
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, var(--paper-line) 70%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--paper-line) 70%, transparent) 1px, transparent 1px);
+    background-size: clamp(3rem, 7vw, 6rem) clamp(3rem, 7vw, 6rem);
+    mask-image: radial-gradient(80% 70% at 50% 50%, black, transparent 95%);
+  }
+
+  /* ---- Scroll reveal --------------------------------------------------- */
+  .reveal {
+    opacity: 0;
+    transform: translate3d(var(--rx, 0), var(--ry, 1.6rem), 0);
+    transition:
+      opacity var(--dur-slow) var(--ease-editorial),
+      transform var(--dur-slow) var(--ease-editorial);
+  }
+
+  .reveal.is-in {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  /* Hero entrance — staggered on mount rather than on scroll. */
+  .hero-rise {
+    opacity: 0;
+    transform: translate3d(0, 0.5em, 0);
+    transition:
+      opacity 850ms var(--ease-editorial),
+      transform 850ms var(--ease-editorial);
+  }
+
+  .hero-lit .hero-rise {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  /* ---- Link affordance ------------------------------------------------ */
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size var(--dur-fast) var(--ease-editorial);
+  }
+
+  .link-underline:hover,
+  .link-underline:focus-visible {
+    background-size: 100% 1px;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  .mask-fade-x {
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  }
+}
+
+@keyframes auroraDrift {
+  0% {
+    transform: translate3d(-2%, -1%, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(3%, 2%, 0) scale(1.08);
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 42s linear infinite;
+}
+
+/* Scrollbar — thin, ink-toned */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #FAF8F5;
+  background: var(--ink);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D8CEBE;
-  border-radius: 4px;
+  background: oklch(0.36 0.013 264);
+  border-radius: 999px;
+  border: 3px solid var(--ink);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #B8AC9A;
+  background: var(--ember);
 }
 
-/* Respect user motion preferences */
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,
@@ -71,17 +279,22 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  .aurora,
+  .animate-marquee {
+    animation: none !important;
+  }
+
+  .reveal,
+  .hero-rise {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
-/* Notebook grid background utility */
-.bg-notebook-grid {
-  background-size: 24px 24px;
-  background-image: 
-    linear-gradient(to right, rgba(231, 225, 215, 0.45) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(231, 225, 215, 0.45) 1px, transparent 1px);
-}
-
-.bg-dot-pattern {
-  background-image: radial-gradient(#D6CEC2 1px, transparent 1px);
-  background-size: 16px 16px;
+/* Content must never depend on JS to become visible. */
+.no-js .reveal,
+.no-js .hero-rise {
+  opacity: 1;
+  transform: none;
 }

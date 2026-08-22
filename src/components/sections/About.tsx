@@ -1,119 +1,50 @@
 import React from "react";
 import { profileData } from "@/data/profile";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { Badge } from "@/components/ui/Badge";
-import { Quote, ArrowRight, Compass, Users, CheckCircle2 } from "lucide-react";
+import { Reveal } from "@/components/ui/Reveal";
 
-export const About: React.FC = () => {
+export function About() {
   return (
-    <section id="about" className="py-20 sm:py-28 border-b border-border bg-canvas-subtle/50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="about" className="section-y relative bg-paper-sunk">
+      <div className="shell">
         <SectionHeading
-          number="02"
-          category="Transition Narrative"
-          title="From execution to product thinking"
-          subtitle="Why shifting from delivery-focused talent operations to product problem-solving is an expansion of verified strengths."
-          annotation="The Authentic Career Pivot"
+          index="02"
+          eyebrow="The narrative"
+          title="Why the pivot is a continuation, not a restart."
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-          {/* Main narrative text */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="bg-surface rounded-2xl p-6 sm:p-8 border border-border shadow-paper space-y-6">
-              <p className="font-serif text-lg sm:text-xl text-ink leading-relaxed italic border-l-2 border-accent pl-4">
-                &ldquo;{profileData.narrativeLead}&rdquo;
-              </p>
+        {/* Editorial drop-cap lead */}
+        <Reveal delay={0.1}>
+          <p className="mt-14 max-w-4xl font-display text-2xl leading-[1.4] text-ink text-pretty sm:text-3xl md:text-[2.1rem] [&::first-letter]:float-left [&::first-letter]:mr-3 [&::first-letter]:mt-1 [&::first-letter]:font-display [&::first-letter]:text-[4.5rem] [&::first-letter]:leading-[0.78] [&::first-letter]:text-ember-deep">
+            {profileData.narrativeLead}
+          </p>
+        </Reveal>
 
-              <div className="space-y-6 pt-2">
-                {profileData.narrativeSections.map((sec, idx) => (
-                  <div key={idx} className="space-y-2 border-t border-border-subtle pt-4 first:border-t-0 first:pt-0">
-                    <h3 className="font-serif text-lg font-medium text-ink flex items-center gap-2">
-                      <span className="font-mono text-xs text-accent font-semibold">
-                        0{idx + 1}.
-                      </span>
-                      {sec.title}
-                    </h3>
-                    <p className="text-sm sm:text-base text-ink-secondary leading-relaxed font-sans font-normal">
-                      {sec.content}
+        <div className="mt-20 flex flex-col gap-16 md:gap-20">
+          {profileData.narrativeSections.map((section, index) => (
+            <Reveal key={section.title} delay={0.05}>
+              <article className="grid grid-cols-1 gap-6 border-t border-paper-line pt-8 md:grid-cols-12 md:gap-10">
+                <header className="md:col-span-4">
+                  <p className="type-label text-ember-deep">0{index + 1}</p>
+                  <h3 className="type-heading mt-3 text-balance text-ink">{section.title}</h3>
+                </header>
+
+                <div className="md:col-span-8">
+                  <p className="max-w-prose text-[1.0625rem] leading-[1.72] text-graphite text-pretty">
+                    {section.content}
+                  </p>
+
+                  {section.highlight ? (
+                    <p className="mt-6 border-l-2 border-ember pl-5 font-display text-xl italic leading-snug text-ink sm:text-2xl">
+                      {section.highlight}
                     </p>
-                    {sec.highlight && (
-                      <div className="inline-block bg-highlight/60 border border-highlight-border/80 px-2.5 py-1 rounded text-xs font-mono text-ink mt-1">
-                        ★ {sec.highlight}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Side summary card */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="bg-surface rounded-2xl p-6 border border-border shadow-paper space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-border">
-                <span className="font-mono text-xs uppercase tracking-wider text-ink-muted">
-                  Quick Profile Scan
-                </span>
-                <Badge variant="sage" size="sm">
-                  London Based
-                </Badge>
-              </div>
-
-              <div className="space-y-3.5 text-sm font-sans">
-                <div className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-medium text-ink">4+ Years Real-World Operations:</span>
-                    <p className="text-xs text-ink-secondary mt-0.5">
-                      High-urgency hiring, compliance scoping, and cross-border team coordination.
-                    </p>
-                  </div>
+                  ) : null}
                 </div>
-
-                <div className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-medium text-ink">1,000+ Deep Discovery Interviews:</span>
-                    <p className="text-xs text-ink-secondary mt-0.5">
-                      Expert in uncovering unstated motivations, psychological friction, and true blockers.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-medium text-ink">Bilingual FR / EN:</span>
-                    <p className="text-xs text-ink-secondary mt-0.5">
-                      Native French, fluent English; extensive cross-cultural business stakeholder management.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-medium text-ink">Zero Vanity Jargon:</span>
-                    <p className="text-xs text-ink-secondary mt-0.5">
-                      Evidence-led, structured trade-offs, and respect for execution constraints.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-border flex items-center justify-between">
-                <a
-                  href="#bridge"
-                  className="text-xs font-mono text-accent hover:underline flex items-center gap-1 font-semibold"
-                >
-                  <span>Explore the Experience-to-Product Bridge</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </a>
-              </div>
-            </div>
-          </div>
+              </article>
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>
   );
-};
+}

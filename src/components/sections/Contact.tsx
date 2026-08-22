@@ -1,113 +1,112 @@
-"use client";
-
-import React, { useState } from "react";
+import React from "react";
 import { siteConfig } from "@/data/site";
+import { profileData } from "@/data/profile";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { LinkedInIcon } from "@/components/ui/Icons";
-import {
-  Mail,
-  Copy,
-  Check,
-  Sparkles,
-  FileDown,
-} from "lucide-react";
+import { Reveal } from "@/components/ui/Reveal";
+import { ArrowUpRightIcon, LinkedInIcon, MailIcon } from "@/components/ui/Icons";
 
-export const Contact: React.FC = () => {
-  const [copied, setCopied] = useState(false);
+const NEXT_STEPS = [
+  {
+    title: "A 20-minute problem walk-through",
+    detail:
+      "Bring a live product problem. I will show the questions I would ask first and how I would frame it.",
+  },
+  {
+    title: "Associate / Junior PM conversations",
+    detail:
+      "London or remote, product teams where discovery and stakeholder ambiguity are the hard part.",
+  },
+  {
+    title: "The written record",
+    detail:
+      "Full CV and the raw case-study notes behind each artefact are available on request.",
+  },
+];
 
-  const handleCopyEmail = () => {
-    navigator.clipboard.writeText(siteConfig.email);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
-
+export function Contact() {
   return (
-    <section id="contact" className="py-20 sm:py-28 bg-canvas relative overflow-hidden">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <section
+      id="contact"
+      data-tone="ink"
+      className="grain section-y relative overflow-hidden bg-ink"
+    >
+      <div className="aurora opacity-80" aria-hidden="true" />
+      <div className="absolute inset-0 hairline-grid opacity-40" aria-hidden="true" />
+
+      <div className="shell relative">
         <SectionHeading
-          number="06"
-          category="Conversation & Opportunities"
-          title="Have a problem worth exploring?"
-          subtitle="Whether you're hiring for a junior/associate product role, looking for a product-minded operator with serious stakeholder rigor, or want to discuss a case study, my inbox is open."
-          annotation="Direct Connection"
+          onInk
+          index="06"
+          eyebrow="Next step"
+          title="Give me a messy problem. I will give you the structure back."
         />
 
-        <div className="rounded-3xl bg-surface border border-border p-8 sm:p-12 shadow-paper-lg max-w-4xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none hidden sm:block">
-            <Sparkles className="w-32 h-32 text-accent" />
-          </div>
+        {/* Oversized mailto */}
+        <Reveal delay={0.1}>
+          <a
+            href={`mailto:${siteConfig.email}`}
+            className="group mt-14 flex flex-wrap items-baseline gap-x-5 gap-y-3 border-b border-paper/15 pb-8 transition-colors duration-[var(--dur-base)] hover:border-ember"
+          >
+            <MailIcon className="h-6 w-6 shrink-0 text-ember" />
+            <span className="type-title break-all text-paper transition-colors duration-[var(--dur-base)] group-hover:text-ember">
+              {siteConfig.email}
+            </span>
+            <ArrowUpRightIcon className="h-6 w-6 shrink-0 text-paper/55 transition-transform duration-[var(--dur-base)] ease-editorial group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-ember" />
+          </a>
+        </Reveal>
 
-          <div className="space-y-8 relative">
-            <div>
-              <Badge variant="sage" size="md" className="mb-4">
-                London · Open to Opportunities
-              </Badge>
-              <h3 className="font-serif text-3xl sm:text-4xl text-ink font-normal tracking-tight">
-                Let&apos;s talk about product thinking.
-              </h3>
-              <p className="text-sm sm:text-base text-ink-secondary mt-3 font-sans max-w-xl leading-relaxed">
-                I am currently interviewing for Product roles in London and remotely, bringing 4+ years of cross-functional discovery, risk scoping, and operational execution.
-              </p>
-            </div>
+        <div className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-12">
+          <Reveal className="lg:col-span-5" delay={0.05}>
+            <p className="type-label text-paper/55">Currently</p>
+            <p className="mt-4 max-w-md font-display text-2xl leading-snug text-paper">
+              {profileData.currentStatus}
+            </p>
+            <p className="mt-3 text-sm text-paper/60">
+              {profileData.location} · Bilingual English / French
+            </p>
 
-            {/* Direct Contact Actions */}
-            <div className="flex flex-wrap items-center gap-3.5 pt-2">
-              <Button
-                href={`mailto:${siteConfig.email}?subject=Product%20Opportunity%20-%20Caroline%20Portfolio`}
-                variant="editorial"
-                size="lg"
-                icon={<Mail className="w-4 h-4" />}
-              >
-                Send Email Directly
-              </Button>
-
-              <button
-                type="button"
-                onClick={handleCopyEmail}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-canvas-subtle hover:bg-canvas text-xs sm:text-sm font-mono text-ink transition-all active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-accent cursor-pointer"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4 text-sage" />
-                    <span>Email copied to clipboard!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4 text-ink-muted" />
-                    <span>Copy email address</span>
-                  </>
-                )}
-              </button>
-
-              <Button
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a
                 href={siteConfig.linkedin}
                 target="_blank"
-                variant="secondary"
-                size="lg"
-                icon={<LinkedInIcon className="w-4 h-4 text-[#0077B5]" />}
+                rel="noreferrer noopener"
+                className="group inline-flex items-center gap-2.5 rounded-pill border border-paper/25 px-5 py-3 text-sm font-semibold text-paper transition-colors duration-[var(--dur-fast)] hover:border-ember hover:text-ember"
               >
-                Connect on LinkedIn
-              </Button>
+                <LinkedInIcon className="h-4 w-4" />
+                LinkedIn
+                <ArrowUpRightIcon className="h-3.5 w-3.5 transition-transform duration-[var(--dur-fast)] ease-editorial group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </a>
+              <a
+                href={`mailto:${siteConfig.email}?subject=Product%20conversation`}
+                className="inline-flex items-center gap-2.5 rounded-pill bg-ember px-5 py-3 text-sm font-semibold text-ink shadow-ember transition-transform duration-[var(--dur-fast)] ease-editorial hover:-translate-y-0.5"
+              >
+                Start a conversation
+              </a>
             </div>
+          </Reveal>
 
-            {/* Note on CV Request */}
-            <div className="pt-6 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs font-sans text-ink-secondary">
-              <div className="flex items-center gap-2">
-                <FileDown className="w-4 h-4 text-accent shrink-0" />
-                <span>
-                  Complete verified CV in PDF format available directly upon email request.
-                </span>
-              </div>
-
-              <span className="font-mono text-[11px] text-ink-faint">
-                Response time: &lt; 24 hours
-              </span>
-            </div>
-          </div>
+          <Reveal className="lg:col-span-7" delay={0.12}>
+            <ol className="flex flex-col">
+              {NEXT_STEPS.map((step, index) => (
+                <li
+                  key={step.title}
+                  className="grid grid-cols-1 gap-3 border-t border-paper/15 py-6 sm:grid-cols-12 sm:gap-6"
+                >
+                  <span className="type-label tabular-nums text-ember sm:col-span-2">
+                    0{index + 1}
+                  </span>
+                  <div className="sm:col-span-10">
+                    <p className="font-display text-lg text-paper sm:text-xl">{step.title}</p>
+                    <p className="mt-2 max-w-xl text-sm leading-relaxed text-paper/50">
+                      {step.detail}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </Reveal>
         </div>
       </div>
     </section>
   );
-};
+}

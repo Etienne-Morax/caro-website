@@ -1,128 +1,127 @@
 "use client";
 
-import React, { useState } from "react";
-import { mentalModelSteps } from "@/data/profile";
-import { Badge } from "@/components/ui/Badge";
-import { ArrowRight, Eye, Crosshair, Compass, CheckCircle2 } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { mentalModelSteps, profileData } from "@/data/profile";
 import { cn } from "@/lib/utils";
 
-const stepIcons = [
-  <Eye key="0" className="w-4 h-4" />,
-  <Crosshair key="1" className="w-4 h-4" />,
-  <Compass key="2" className="w-4 h-4" />,
-  <CheckCircle2 key="3" className="w-4 h-4" />,
-];
+const AUTOPLAY_MS = 5200;
 
-export const InteractiveProductLoop: React.FC = () => {
-  const [activeStepIndex, setActiveStepIndex] = useState(0);
-  const activeStep = mentalModelSteps[activeStepIndex];
+/**
+ * Signature device: the four-beat reasoning loop Caroline runs on ambiguity.
+ * Auto-advances until the visitor takes over, then holds their selection.
+ */
+export function InteractiveProductLoop() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isUserDriven, setIsUserDriven] = useState(false);
+
+  useEffect(() => {
+    if (isUserDriven) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const timer = window.setInterval(
+      () => setActiveIndex((index) => (index + 1) % mentalModelSteps.length),
+      AUTOPLAY_MS,
+    );
+    return () => window.clearInterval(timer);
+  }, [isUserDriven]);
+
+  const active = mentalModelSteps[activeIndex];
+
+  const select = (index: number) => {
+    setIsUserDriven(true);
+    setActiveIndex(index);
+  };
 
   return (
-    <div className="w-full rounded-2xl bg-surface border border-border p-5 sm:p-7 shadow-paper hover:shadow-paper-hover transition-all duration-300">
-      {/* Header of the interactive module */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-border gap-2">
-        <div className="flex items-center gap-2">
-          <Badge variant="highlight">INTERACTIVE FRAMEWORK</Badge>
-          <span className="font-mono text-xs text-ink-muted">
-            The Product Reasoning Loop
-          </span>
-        </div>
-        <span className="text-xs font-sans text-ink-faint hidden sm:inline">
-          Click any phase to inspect the methodology
+    <div className="relative rounded-card border border-paper/15 bg-paper/[0.035] p-5 backdrop-blur-md sm:p-7">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -inset-px rounded-card bg-gradient-to-b from-paper/10 to-transparent opacity-40"
+      />
+
+      <div className="relative flex items-center justify-between gap-4">
+        <p className="type-label text-paper/50">{profileData.heroInteractivePill}</p>
+        <span className="type-label tabular-nums text-ember">
+          {active.step} / 0{mentalModelSteps.length}
         </span>
       </div>
 
-      {/* 4 Interactive Phase Tabs */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 my-5">
-        {mentalModelSteps.map((step, idx) => {
-          const isSelected = idx === activeStepIndex;
+      {/* Step selector */}
+      <div role="tablist" aria-label="Product reasoning loop" className="relative mt-6 flex gap-1.5">
+        {mentalModelSteps.map((step, index) => {
+          const isActive = index === activeIndex;
           return (
             <button
               key={step.step}
               type="button"
-              onClick={() => setActiveStepIndex(idx)}
+              role="tab"
+              id={`loop-tab-${step.step}`}
+              aria-selected={isActive}
+              aria-controls={`loop-panel-${step.step}`}
+              tabIndex={isActive ? 0 : -1}
+              onClick={() => select(index)}
+              onFocus={() => select(index)}
+              onMouseEnter={() => select(index)}
               className={cn(
-                "group text-left p-3 rounded-xl border transition-all duration-200 relative overflow-hidden focus-visible:ring-2 focus-visible:ring-accent",
-                isSelected
-                  ? "bg-canvas-subtle border-accent/70 shadow-sm"
-                  : "bg-surface hover:bg-canvas-subtle/50 border-border"
+                "group relative flex-1 rounded-lg px-2 py-3 text-left transition-colors duration-[var(--dur-fast)]",
+                isActive ? "bg-paper/[0.07]" : "hover:bg-paper/[0.04]",
               )}
             >
-              {isSelected && (
-                <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent" />
-              )}
-              <div className="flex items-center justify-between mb-1.5">
-                <span
-                  className={cn(
-                    "font-mono text-[11px] font-semibold transition-colors",
-                    isSelected ? "text-accent" : "text-ink-muted group-hover:text-ink"
-                  )}
-                >
-                  PHASE {step.step}
-                </span>
-                <span
-                  className={cn(
-                    "transition-colors",
-                    isSelected ? "text-accent" : "text-ink-faint group-hover:text-ink-muted"
-                  )}
-                >
-                  {stepIcons[idx]}
-                </span>
-              </div>
-              <div className="font-serif text-base font-medium text-ink">
+              <span
+                className={cn(
+                  "block text-[0.625rem] font-semibold tracking-label transition-colors",
+                  isActive ? "text-ember" : "text-paper/55",
+                )}
+              >
+                {step.step}
+              </span>
+              <span
+                className={cn(
+                  "mt-1 block font-display text-base leading-none transition-colors sm:text-lg",
+                  isActive ? "text-paper" : "text-paper/60 group-hover:text-paper/75",
+                )}
+              >
                 {step.title}
-              </div>
+              </span>
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "mt-3 block h-px w-full transition-colors duration-[var(--dur-base)]",
+                  isActive ? "bg-ember" : "bg-paper/15",
+                )}
+              />
             </button>
           );
         })}
       </div>
 
-      {/* Active Phase Deep Dive Panel */}
-      <div className="bg-canvas-subtle/70 rounded-xl p-4 sm:p-6 border border-border-subtle mt-4 space-y-4 animate-in fade-in duration-200">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-border/60 pb-3">
+      {/* Panel — one persistent node, content swapped in place. */}
+      <div
+        role="tabpanel"
+        id={`loop-panel-${active.step}`}
+        aria-labelledby={`loop-tab-${active.step}`}
+        className="relative mt-6 flex min-h-[15rem] flex-col gap-5"
+      >
+        <p className="font-display text-xl italic leading-snug text-paper sm:text-2xl">
+          “{active.questionPrompt}”
+        </p>
+
+        <p className="text-[0.9375rem] leading-relaxed text-paper/55">{active.shortDescription}</p>
+
+        <div className="grid gap-3 rounded-lg border border-paper/10 bg-ink/40 p-4">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-accent font-semibold">
-                PHASE {activeStep.step}
-              </span>
-              <span className="text-border-strong">/</span>
-              <h3 className="font-serif text-xl text-ink font-normal">
-                {activeStep.title}
-              </h3>
-            </div>
-            <p className="text-sm text-ink-secondary mt-0.5 font-sans">
-              {activeStep.shortDescription}
+            <p className="type-label text-paper/55">In practice</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-paper/70">
+              {active.recruitmentParallel}
             </p>
           </div>
-
-          <Badge variant="sage" size="md">
-            {activeStep.productCompetency}
-          </Badge>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-          {/* Core Question Prompt */}
-          <div className="p-3.5 rounded-lg bg-surface border border-border">
-            <div className="font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-1">
-              Guiding Product Question
-            </div>
-            <p className="font-serif text-base text-ink italic">
-              &ldquo;{activeStep.questionPrompt}&rdquo;
-            </p>
-          </div>
-
-          {/* Operational & Discovery Parallel */}
-          <div className="p-3.5 rounded-lg bg-surface border border-border">
-            <div className="font-mono text-[11px] uppercase tracking-wider text-accent mb-1 flex items-center gap-1">
-              <span>Transferable Experience Foundation</span>
-              <ArrowRight className="w-3 h-3" />
-            </div>
-            <p className="font-sans text-xs sm:text-sm text-ink-secondary leading-snug">
-              {activeStep.recruitmentParallel}
-            </p>
+          <div className="h-px bg-paper/10" aria-hidden="true" />
+          <div>
+            <p className="type-label text-paper/55">Product competency</p>
+            <p className="mt-1.5 text-sm font-medium text-ember">{active.productCompetency}</p>
           </div>
         </div>
       </div>
     </div>
   );
-};
+}

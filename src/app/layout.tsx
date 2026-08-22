@@ -1,29 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Newsreader, JetBrains_Mono } from "next/font/google";
+import { Inter_Tight, Instrument_Serif } from "next/font/google";
 import { siteConfig } from "@/data/site";
 import "./globals.css";
 
-const sans = Plus_Jakarta_Sans({
+const sans = Inter_Tight({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
 });
 
-const serif = Newsreader({
+const display = Instrument_Serif({
   subsets: ["latin"],
+  weight: "400",
   style: ["normal", "italic"],
-  variable: "--font-serif",
-  display: "swap",
-});
-
-const mono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
+  variable: "--font-display",
   display: "swap",
 });
 
 export const viewport: Viewport = {
-  themeColor: "#FAF8F5",
+  themeColor: "#131519",
   width: "device-width",
   initialScale: 1,
 };
@@ -93,14 +88,20 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className={`${sans.variable} ${serif.variable} ${mono.variable} scroll-smooth`}>
+    <html lang="en" className={`${sans.variable} ${display.variable} scroll-smooth`}>
       <head>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="min-h-screen bg-canvas text-ink antialiased selection:bg-accent-light selection:text-accent">
+      <body className="min-h-screen bg-ink text-graphite antialiased">
+        <a
+          href="#overview"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-6 focus:top-6 focus:z-[100] focus:rounded-pill focus:bg-ember focus:px-5 focus:py-3 focus:text-sm focus:font-semibold focus:text-ink"
+        >
+          Skip to content
+        </a>
         {children}
       </body>
     </html>

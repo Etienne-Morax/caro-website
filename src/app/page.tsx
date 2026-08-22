@@ -1,6 +1,7 @@
 import React from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { Marquee } from "@/components/ui/Marquee";
 import { Hero } from "@/components/sections/Hero";
 import { Principles } from "@/components/sections/Principles";
 import { About } from "@/components/sections/About";
@@ -9,37 +10,46 @@ import { ProductBridge } from "@/components/sections/ProductBridge";
 import { ArtefactsSection } from "@/components/sections/ArtefactsSection";
 import { Contact } from "@/components/sections/Contact";
 
+const MARQUEE_ITEMS = [
+  "Stakeholder discovery",
+  "Problem framing",
+  "Trade-off analysis",
+  "Journey mapping",
+  "Market intelligence",
+  "Ruthless prioritisation",
+];
+
 export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-screen bg-canvas text-ink selection:bg-accent-light selection:text-accent">
-      {/* Persistent Navigation */}
+    <div className="flex min-h-screen flex-col bg-ink">
       <Header />
 
-      {/* Main One-Page Product Journey */}
       <main className="flex-1">
-        {/* 00. Hero & Signature Interactive Mental Model */}
+        {/* 00 — Noir hero + signature reasoning loop */}
         <Hero />
 
-        {/* 01. Product Mindset: 4 Core Principles */}
+        {/* Ember transition band: ink → paper */}
+        <Marquee items={MARQUEE_ITEMS} />
+
+        {/* 01 — Operating principles */}
         <Principles />
 
-        {/* 02. About: The Authentic Career Pivot Narrative */}
+        {/* 02 — The pivot narrative */}
         <About />
 
-        {/* 03. Experience: Verified Facts + Product Lens */}
+        {/* 03 — Verified experience, read through a product lens */}
         <Experience />
 
-        {/* 04. Experience-to-Product Bridge: Transferable Matrix */}
+        {/* 04 — Translation matrix */}
         <ProductBridge />
 
-        {/* 05. Selected Artefacts & 11-Step Case Studies */}
+        {/* 05 — Case studies & artefacts */}
         <ArtefactsSection />
 
-        {/* 06. Contact & Direct Next Steps */}
+        {/* 06 — Contact */}
         <Contact />
       </main>
 
-      {/* Minimal Editorial Footer */}
       <Footer />
     </div>
   );

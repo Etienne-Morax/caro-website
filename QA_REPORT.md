@@ -1,41 +1,79 @@
-# Quality Assurance & Validation Report
+# QA Report — "Ink & Ember" redesign
 
-## 1. Automated Build & Compilation
-- **Framework**: Next.js 15.1.7 with React 19 and Tailwind CSS.
-- **Build Status**: `pnpm build` completed with **0 errors** and **0 warnings**.
-- **Static Pre-rendering**: All routes prerendered statically with shared chunk size <105 kB.
-- **TypeScript**: Strict mode enabled with full interface validation across all data files.
+Run against the **production build** (`pnpm build && pnpm start`), Chrome via
+Playwright. Reproduce with the scripts in `scripts/`.
 
----
+```bash
+pnpm build && pnpm start
+BASE_URL=http://localhost:3000 OUT_DIR=./screenshots node scripts/screenshots.mjs
+BASE_URL=http://localhost:3000 node scripts/a11y.mjs
+BASE_URL=http://localhost:3000 node scripts/contrast.mjs
+BASE_URL=http://localhost:3000 OUT_DIR=./screenshots node scripts/qa.mjs
+```
 
-## 2. Accessibility & UX Audit (WCAG AA Standard)
+## Accessibility — axe-core (WCAG 2.0/2.1 A + AA)
 
-| Test Item | Verification Method | Result | Notes |
-| :--- | :--- | :---: | :--- |
-| **Color Contrast** | Computed contrast ratios for Ink (`#15181C`) on Canvas (`#FAF8F5`) | **14.2:1** | Passes WCAG AAA (minimum 7:1) |
-| **Accent Contrast** | Accent (`#C85A32`) on Canvas (`#FAF8F5`) for buttons & badges | **4.8:1** | Passes WCAG AA for normal text |
-| **Keyboard Navigation** | Tab order through header, interactive loop, cards, modal, and footer | **Pass** | Clear `:focus-visible` ring with 2px accent outline |
-| **Modal Esc Trapping** | Open modal and press `Escape` key | **Pass** | Modal closes and body scroll lock releases gracefully |
-| **Deep-Linking** | Modal opens/updates hash (`#artefact-[slug]`) without scroll jumping | **Pass** | Clean URL history replacement |
-| **Reduced Motion** | `@media (prefers-reduced-motion: reduce)` in `globals.css` | **Pass** | Animations drop to 0.01ms duration |
+**0 violations**, audited section by section (each scrolled into view so axe
+samples the real painted background) plus the case-study modal.
 
----
+Manual checks:
 
-## 3. Multi-Device Responsive Testing
+- Skip link to `#overview`, visible on focus.
+- Reasoning loop uses `tablist`/`tab`/`tabpanel` with a roving tab index.
+- Modal: focus moves to the close button on open and returns to the trigger on
+  close; `Escape` closes; body scroll is locked.
+- `:focus-visible` ring (2px ember, 3px offset) on every interactive element.
+- Decorative layers (`aurora`, grain, hairline grids, watermark numerals) are
+  `aria-hidden` or CSS pseudo-elements, so none reach the a11y tree.
 
-- **Mobile (375px – 430px)**:
-  - Header collapses into responsive mobile navigation drawer.
-  - Interactive Product Loop reflows into a 2x2 grid with clear tap targets (>44px).
-  - Experience cards and Product Bridge table stack into single-column cards.
-- **Tablet (768px – 1024px)**:
-  - 2-column grid layout for Principles and Artefacts.
-  - Sticky header displays pill status and navigation anchors.
-- **Desktop (1280px+)**:
-  - Full editorial width with maximum 6xl container, spacious margins, and annotated callouts.
+## Colour contrast
 
----
+Independent composite check (`scripts/contrast.mjs`, resolves oklch through a
+canvas and composites every background layer): **1 reported failure, a known
+false positive** — the "C" wordmark glyph sits over an ember disc drawn as a
+sibling element, so the script cannot see the disc. Actual ratio ≈ 5.9:1.
 
-## 4. SEO & Metadata Audit
-- **OpenGraph & Twitter Card**: Pre-configured in `src/app/layout.tsx` with title, description, and canonical URL.
-- **Structured Schema**: Valid `Person` and `WebSite` JSON-LD schema injected in `<head>` for rich recruiter search indexing.
-- **Semantic HTML**: Proper `<header>`, `<main>`, `<section>`, `<nav>`, `<article>`, `<dialog>`, and `<footer>` landmarks.
+Fixed during the pass: `graphite-muted` darkened to `oklch(0.455)`,
+`ember-deep` to `oklch(0.505)`, faint `text-paper/*` steps raised to ≥ 55%, and
+the featured-card badge given an on-ink variant.
+
+> Note: Tailwind only emits opacity steps in multiples of 5. `text-paper/58`
+> and `border-paper/12` silently produced no CSS. Keep opacity modifiers on the
+> 5-step scale.
+
+## Responsive
+
+No horizontal overflow at **320 / 375 / 768 / 1024 / 1440 / 1920**.
+`overflow-x: clip` on `html, body` (not `hidden`, which would break the bridge
+panel's `position: sticky`).
+
+## Motion
+
+- `prefers-reduced-motion: reduce`: all 37 reveal elements render at final
+  state, hero opacity 1, aurora and marquee animations disabled.
+- Entrance animations are CSS transitions toggled by a class, so a starved
+  frame budget cannot leave content invisible.
+
+## Performance
+
+| | Before | After |
+| :--- | :--- | :--- |
+| First Load JS (`/`) | 176 kB | **130 kB** |
+
+Under the 150 kB landing-page budget. `framer-motion` and `lucide-react` were
+removed (icons are now a local SVG set). Two font families, `display: swap`.
+
+## Known gaps
+
+- `siteConfig.email` and `siteConfig.linkedin` are still placeholders — see
+  [`CONTENT_GAPS.md`](./CONTENT_GAPS.md).
+- No `/og-preview.png` yet; metadata references it.
+- Lighthouse field metrics (LCP/INP/CLS) not measured here — worth running once
+  the site is deployed on real hosting.
+
+## Dev-server caveat
+
+The Next dev server repeatedly served a **stale Tailwind stylesheet** after
+`tailwind.config.ts` or class-name changes, which manifests as missing
+backgrounds and inherited text colours. Verify visuals against `pnpm build &&
+pnpm start`, or `rm -rf .next` before trusting a dev-server screenshot.
